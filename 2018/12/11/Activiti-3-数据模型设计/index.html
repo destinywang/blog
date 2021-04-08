@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=6.1.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=6.1.0">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=6.1.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '6.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="数据表分类 描述    ACT_GE_* 通用数据表   ACT_RE_* 流程定义存储表   ACT_ID_* 身份信息表   ACT_RU_* 运行时数据库表   ACT_HI_* 历史数据库表, 为了保证运行时数据尽可能少, 流程执行完就会将相关数据迁移到历史表中    核心引擎: activiti.mysql.create.engine.sql 历史数据: activiti.mysq">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activiti(3)--数据模型设计">
+<meta property="og:url" content="https://destinywang.github.io/blog/2018/12/11/Activiti-3-%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="数据表分类 描述    ACT_GE_* 通用数据表   ACT_RE_* 流程定义存储表   ACT_ID_* 身份信息表   ACT_RU_* 运行时数据库表   ACT_HI_* 历史数据库表, 为了保证运行时数据尽可能少, 流程执行完就会将相关数据迁移到历史表中    核心引擎: activiti.mysql.create.engine.sql 历史数据: activiti.mysq">
+<meta property="og:locale">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49807932-40ddce80-fd96-11e8-8959-b2ccad75a9c1.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49808023-797da800-fd96-11e8-9940-8aa8ac085e7f.png">
+<meta property="article:published_time" content="2018-12-11T14:24:27.000Z">
+<meta property="article:modified_time" content="2018-12-12T13:32:47.000Z">
+<meta property="article:author" content="destiny">
+<meta property="article:tag" content="Activiti">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/17758731/49807932-40ddce80-fd96-11e8-8959-b2ccad75a9c1.png">
+
+
+
+  <link rel="alternate" href="/blog/atom.xml" title="Hexo" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://destinywang.github.io/blog/2018/12/11/Activiti-3-数据模型设计/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Activiti(3)--数据模型设计 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/destinywang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/blog/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/blog/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />归档</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-categories">
+    <a href="/blog/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />分类</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/blog/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-about">
+    <a href="/blog/about" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />关于</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-search">
+    <a href="/blog/search" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />搜索</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-commonweal">
+    <a href="/blog/404.html" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />公益 404</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-something">
+    <a href="/blog/something" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />something</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://destinywang.github.io/blog/blog/2018/12/11/Activiti-3-%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Activiti(3)--数据模型设计</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T22:24:27+08:00">2018-12-11</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/" itemprop="url" rel="index"><span itemprop="name">Activiti</span></a></span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a></span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/Java/%E5%B7%A5%E4%BD%9C%E6%B5%81/" itemprop="url" rel="index"><span itemprop="name">工作流</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <table>
+<thead>
+<tr>
+<th>数据表分类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACT_GE_*</td>
+<td>通用数据表</td>
+</tr>
+<tr>
+<td>ACT_RE_*</td>
+<td>流程定义存储表</td>
+</tr>
+<tr>
+<td>ACT_ID_*</td>
+<td>身份信息表</td>
+</tr>
+<tr>
+<td>ACT_RU_*</td>
+<td>运行时数据库表</td>
+</tr>
+<tr>
+<td>ACT_HI_*</td>
+<td>历史数据库表, 为了保证运行时数据尽可能少, 流程执行完就会将相关数据迁移到历史表中</td>
+</tr>
+</tbody></table>
+<ul>
+<li>核心引擎: activiti.mysql.create.engine.sql</li>
+<li>历史数据: activiti.mysql.create.history.sql</li>
+<li>身份数据: activiti.mysql.create.identity.sql</li>
+</ul>
+<p>Activiti 除了核心引擎以外, 其他都是可选的.</p>
+<p>首先创建 <code>ACT_GE_PROPERTY</code> 表, 并写入:</p>
+<ol>
+<li><code>schema.version</code>(schema 版本)</li>
+<li><code>schema.history</code>(schema 历史)</li>
+<li><code>next.dbid</code>(自增 id)<br>三条记录</li>
+</ol>
+<h1 id="1-通用数据库"><a href="#1-通用数据库" class="headerlink" title="1. 通用数据库"></a>1. 通用数据库</h1><table>
+<thead>
+<tr>
+<th>数据表分类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACT_GE_PROPERTY</td>
+<td>属性表(保存流程引擎的 kv 键值属性)</td>
+</tr>
+<tr>
+<td>ACT_GE_BYTEARRAY</td>
+<td>资源表(存储流程定义相关的资源, 如 xml, 流程定义图)</td>
+</tr>
+</tbody></table>
+<h2 id="1-1-ACT-GE-PROPERTY"><a href="#1-1-ACT-GE-PROPERTY" class="headerlink" title="1.1. ACT_GE_PROPERTY"></a>1.1. ACT_GE_PROPERTY</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.PropertyEntityImpl</code></p>
+<p><img src="https://user-images.githubusercontent.com/17758731/49807932-40ddce80-fd96-11e8-8959-b2ccad75a9c1.png" alt="image"></p>
+<h2 id="1-2-ACT-GE-BYTEARRAY"><a href="#1-2-ACT-GE-BYTEARRAY" class="headerlink" title="1.2 ACT_GE_BYTEARRAY"></a>1.2 ACT_GE_BYTEARRAY</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.ByteArrayEntityImpl</code></p>
+<p><img src="https://user-images.githubusercontent.com/17758731/49808023-797da800-fd96-11e8-9940-8aa8ac085e7f.png" alt="image"></p>
+<p>其中 GENERATED_ 字段标识该资源文件是自动生成还是人工上传</p>
+<p>如果不想添加身份信息相关数据库和历史数据相关数据库, 可以在配置中显式指定</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;processEngineConfiguration&quot;</span></span></span><br><span class="line"><span class="tag">      <span class="attr">class</span>=<span class="string">&quot;org.activiti.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;jdbcUrl&quot;</span> <span class="attr">value</span>=<span class="string">&quot;jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000;MVCC=TRUE&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;jdbcDriver&quot;</span> <span class="attr">value</span>=<span class="string">&quot;org.h2.Driver&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;jdbcUsername&quot;</span> <span class="attr">value</span>=<span class="string">&quot;sa&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;jdbcPassword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span>/&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 不创建 ACT_ID_* 相关的表 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;dbIdentityUsed&quot;</span> <span class="attr">value</span>=<span class="string">&quot;false&quot;</span>/&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 不创建 ACT_HI_* 相关的表 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;dbHistoryUsed&quot;</span> <span class="attr">value</span>=<span class="string">&quot;false&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="2-流程定义存储表"><a href="#2-流程定义存储表" class="headerlink" title="2. 流程定义存储表"></a>2. 流程定义存储表</h1><table>
+<thead>
+<tr>
+<th>数据表分类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACT_RE_DEPLOYMENT</td>
+<td>流程部署记录表</td>
+</tr>
+<tr>
+<td>ACT_RE_PROCDEF</td>
+<td>流程定义信息表</td>
+</tr>
+<tr>
+<td>ACT_RE_MODEL</td>
+<td>模型信息表(用于 web 设计器)</td>
+</tr>
+<tr>
+<td>ACT_PROCDEF_INFO</td>
+<td>流程定义动态改变信息表</td>
+</tr>
+</tbody></table>
+<h2 id="2-1-ACT-RE-DEPLOYMENT"><a href="#2-1-ACT-RE-DEPLOYMENT" class="headerlink" title="2.1. ACT_RE_DEPLOYMENT"></a>2.1. ACT_RE_DEPLOYMENT</h2><p>对应实体 <code>org.activiti.engine.impl.persistence.entity.DeploymentEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ID_</td>
+<td>主键</td>
+</tr>
+<tr>
+<td>NAME_</td>
+<td>名称</td>
+</tr>
+<tr>
+<td>CATEGORY_</td>
+<td>分类</td>
+</tr>
+<tr>
+<td>TENANT_ID_</td>
+<td>多租户标志</td>
+</tr>
+<tr>
+<td>DEPLOY_TIME_</td>
+<td>部署时间</td>
+</tr>
+<tr>
+<td>KEY_</td>
+<td>标志 key</td>
+</tr>
+<tr>
+<td>ENGINE_VERSION_</td>
+<td>兼容版本, 如果使用 Activiti5, 在升级到6后会有特殊标志</td>
+</tr>
+</tbody></table>
+<h2 id="2-2-ACT-RE-PROCDEF"><a href="#2-2-ACT-RE-PROCDEF" class="headerlink" title="2.2 ACT_RE_PROCDEF"></a>2.2 ACT_RE_PROCDEF</h2><p>对应实体 <code>org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DEPLOYMENT_ID_</td>
+<td>关联部署 id</td>
+</tr>
+<tr>
+<td>RESOURCE_NAME_</td>
+<td>流程定义资源名称</td>
+</tr>
+<tr>
+<td>DGRM_RESOURCE_NAME_</td>
+<td>流程图片资源名称</td>
+</tr>
+<tr>
+<td>HAS_START_FORM_KEY_</td>
+<td>是否存在开始表单标志</td>
+</tr>
+<tr>
+<td>HAS_GRAPHICAL_NOTATION_</td>
+<td>是否有图形信息</td>
+</tr>
+<tr>
+<td>SUSPENSION_STATE_</td>
+<td>挂起状态 1 正常, 2 挂起</td>
+</tr>
+</tbody></table>
+<h2 id="2-3-测试代码"><a href="#2-3-测试代码" class="headerlink" title="2.3. 测试代码"></a>2.3. 测试代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testDeploy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    activitiRule.getRepositoryService()</span><br><span class="line">            .createDeployment()</span><br><span class="line">            .name(<span class="string">&quot;二次审批流程&quot;</span>)</span><br><span class="line">            .addClasspathResource(<span class="string">&quot;org/destiny/activiti/SecondApprove.bpmn20.xml&quot;</span>)</span><br><span class="line">            .deploy();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>ACT_RE_DEPLOYMENT 表内容:</p>
+</blockquote>
+<pre><code>mysql&gt; select * from ACT_RE_DEPLOYMENT \G;
+*************************** 1. row ***************************
+            ID_: 1
+          NAME_: 二次审批流程
+      CATEGORY_: NULL
+           KEY_: NULL
+     TENANT_ID_:
+   DEPLOY_TIME_: 2018-12-11 09:11:27.538
+ENGINE_VERSION_: NULL
+</code></pre>
+<blockquote>
+<p>ACT_RE_PROCDEF 表内容:</p>
+</blockquote>
+<pre><code>mysql&gt; select * from ACT_RE_PROCDEF \G;
+*************************** 1. row ***************************
+                    ID_: SecondApprove:1:4
+                   REV_: 1
+              CATEGORY_: http://www.activiti.org/test
+                  NAME_: 二级审批
+                   KEY_: SecondApprove
+               VERSION_: 1
+         DEPLOYMENT_ID_: 1
+         RESOURCE_NAME_: org/destiny/activiti/SecondApprove.bpmn20.xml
+    DGRM_RESOURCE_NAME_: org/destiny/activiti/SecondApprove.SecondApprove.png
+           DESCRIPTION_: NULL
+    HAS_START_FORM_KEY_: 0
+HAS_GRAPHICAL_NOTATION_: 1
+      SUSPENSION_STATE_: 1
+             TENANT_ID_:
+        ENGINE_VERSION_: NULL
+        
+        
+</code></pre>
+<p>可以看到, 其中 <code>HAS_START_FORM_KEY_</code> 为 0, <code>DESCRIPTION_</code> 为 NULL, 二者都需要去流程定义文件中设置</p>
+<ul>
+<li><code>HAS_START_FORM_KEY_</code> 需要在 startEvent 中设置 actviti:formKey;</li>
+<li><code>DESCRIPTION</code> 需要设置 documentation</li>
+</ul>
+<p>修改流程定义文件:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">definitions</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.omg.org/spec/BPMN/20100524/MODEL&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:xsd</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema&quot;</span> <span class="attr">xmlns:activiti</span>=<span class="string">&quot;http://activiti.org/bpmn&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:bpmndi</span>=<span class="string">&quot;http://www.omg.org/spec/BPMN/20100524/DI&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:omgdc</span>=<span class="string">&quot;http://www.omg.org/spec/DD/20100524/DC&quot;</span> <span class="attr">xmlns:omgdi</span>=<span class="string">&quot;http://www.omg.org/spec/DD/20100524/DI&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">typeLanguage</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema&quot;</span> <span class="attr">expressionLanguage</span>=<span class="string">&quot;http://www.w3.org/1999/XPath&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">targetNamespace</span>=<span class="string">&quot;http://www.activiti.org/test&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;SecondApprove&quot;</span> <span class="attr">name</span>=<span class="string">&quot;二级审批&quot;</span> <span class="attr">isExecutable</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">documentation</span>&gt;</span>审批流程描述<span class="tag">&lt;/<span class="name">documentation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;startEvent&quot;</span> <span class="attr">name</span>=<span class="string">&quot;开始&quot;</span> <span class="attr">activiti:formKey</span>=<span class="string">&quot;/process/form/key&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">startEvent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;submitApprove&quot;</span> <span class="attr">name</span>=<span class="string">&quot;填写申请信息&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后重新部署即可看到: </p>
+<pre><code>mysql&gt; select * from ACT_RE_PROCDEF \G;
+*************************** 1. row ***************************
+                    ID_: SecondApprove:1:4
+                   REV_: 1
+              CATEGORY_: http://www.activiti.org/test
+                  NAME_: 二级审批
+                   KEY_: SecondApprove
+               VERSION_: 1
+         DEPLOYMENT_ID_: 1
+         RESOURCE_NAME_: org/destiny/activiti/SecondApprove.bpmn20.xml
+    DGRM_RESOURCE_NAME_: org/destiny/activiti/SecondApprove.SecondApprove.png
+           DESCRIPTION_: NULL
+    HAS_START_FORM_KEY_: 0
+HAS_GRAPHICAL_NOTATION_: 1
+      SUSPENSION_STATE_: 1
+             TENANT_ID_:
+        ENGINE_VERSION_: NULL
+*************************** 2. row ***************************
+                    ID_: SecondApprove:2:2504
+                   REV_: 1
+              CATEGORY_: http://www.activiti.org/test
+                  NAME_: 二级审批
+                   KEY_: SecondApprove
+               VERSION_: 2
+         DEPLOYMENT_ID_: 2501
+         RESOURCE_NAME_: org/destiny/activiti/SecondApprove.bpmn20.xml
+    DGRM_RESOURCE_NAME_: org/destiny/activiti/SecondApprove.SecondApprove.png
+           DESCRIPTION_: 审批流程描述
+    HAS_START_FORM_KEY_: 0
+HAS_GRAPHICAL_NOTATION_: 1
+      SUSPENSION_STATE_: 1
+             TENANT_ID_:
+        ENGINE_VERSION_: NULL
+        
+        
+</code></pre>
+<p>ACT_RE_PROCDEF 是基于 KEY_ 去升级版本号, 当原有的 key 已经存在, 就会升级版本号, 其中 KEY_, VERSION_, TENANT_ID_ 共同组成一个唯一键</p>
+<h1 id="3-身份数据表设计"><a href="#3-身份数据表设计" class="headerlink" title="3. 身份数据表设计"></a>3. 身份数据表设计</h1><table>
+<thead>
+<tr>
+<th>数据表设计</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACT_ID_USER</td>
+<td>用户的基本信息</td>
+</tr>
+<tr>
+<td>ACT_ID_INFO</td>
+<td>用户的扩展信息</td>
+</tr>
+<tr>
+<td>ACT_ID_GROUP</td>
+<td>群组</td>
+</tr>
+<tr>
+<td>ACT_ID_MEMBERSHIP</td>
+<td>用户与群组关系</td>
+</tr>
+</tbody></table>
+<h2 id="3-1-用户信息表"><a href="#3-1-用户信息表" class="headerlink" title="3.1. 用户信息表"></a>3.1. 用户信息表</h2><p>对应实体 <code>org.activiti.engine.impl.persistence.entity.UserEntityImpl</code></p>
+<pre><code>+-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| ID_         | varchar(64)  | NO   | PRI | NULL    |       |
+| REV_        | int(11)      | YES  |     | NULL    |       |
+| FIRST_      | varchar(255) | YES  |     | NULL    |       |
+| LAST_       | varchar(255) | YES  |     | NULL    |       |
+| EMAIL_      | varchar(255) | YES  |     | NULL    |       |
+| PWD_        | varchar(255) | YES  |     | NULL    |       |
+| PICTURE_ID_ | varchar(64)  | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+</code></pre>
+<h2 id="3-2-用户扩展信息"><a href="#3-2-用户扩展信息" class="headerlink" title="3.2. 用户扩展信息"></a>3.2. 用户扩展信息</h2><p>对应实体 <code>org.activiti.engine.impl.persistence.entity.IdentityInfoEntityImpl</code></p>
+<pre><code>+------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| ID_        | varchar(64)  | NO   | PRI | NULL    |       |
+| REV_       | int(11)      | YES  |     | NULL    |       |
+| USER_ID_   | varchar(64)  | YES  |     | NULL    |       |
+| TYPE_      | varchar(64)  | YES  |     | NULL    |       |
+| KEY_       | varchar(255) | YES  |     | NULL    |       |
+| VALUE_     | varchar(255) | YES  |     | NULL    |       |
+| PASSWORD_  | longblob     | YES  |     | NULL    |       |
+| PARENT_ID_ | varchar(255) | YES  |     | NULL    |       |
++------------+--------------+------+-----+---------+-------+
+</code></pre>
+<ul>
+<li>USER_ID_: 关联用户 id</li>
+<li>TYPE_: 类型(固定值)</li>
+<li>KEY_: 属性名</li>
+<li>VALUE_: 属性值</li>
+<li>PASSWORD_: 密码(未使用)</li>
+<li>PARENT_ID_: 上级关联(不建议使用)</li>
+</ul>
+<h2 id="3-3-ACT-ID-GROUP"><a href="#3-3-ACT-ID-GROUP" class="headerlink" title="3.3. ACT_ID_GROUP"></a>3.3. ACT_ID_GROUP</h2><p>对应实体 <code>org.activiti.engine.impl.persistence.entity.GroupEntityImpl</code></p>
+<pre><code>+-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| ID_   | varchar(64)  | NO   | PRI | NULL    |       |
+| REV_  | int(11)      | YES  |     | NULL    |       |
+| NAME_ | varchar(255) | YES  |     | NULL    |       |
+| TYPE_ | varchar(255) | YES  |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+</code></pre>
+<h2 id="3-4-用户组关系表"><a href="#3-4-用户组关系表" class="headerlink" title="3.4. 用户组关系表"></a>3.4. 用户组关系表</h2><p>对应实体 <code>org.activiti.engine.impl.persistence.entity.MembershipEntityImpl</code></p>
+<pre><code>+-----------+-------------+------+-----+---------+-------+
+| Field     | Type        | Null | Key | Default | Extra |
++-----------+-------------+------+-----+---------+-------+
+| USER_ID_  | varchar(64) | NO   | PRI | NULL    |       |
+| GROUP_ID_ | varchar(64) | NO   | PRI | NULL    |       |
++-----------+-------------+------+-----+---------+-------+
+</code></pre>
+<p>测试代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testIdentity</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    IdentityService identityService = activitiRule.getIdentityService();</span><br><span class="line">    User user1 = identityService.newUser(<span class="string">&quot;user1&quot;</span>);</span><br><span class="line">    user1.setFirstName(<span class="string">&quot;firstName&quot;</span>);</span><br><span class="line">    user1.setLastName(<span class="string">&quot;lastName&quot;</span>);</span><br><span class="line">    user1.setEmail(<span class="string">&quot;user1@126.com&quot;</span>);</span><br><span class="line">    user1.setPassword(<span class="string">&quot;pwd&quot;</span>);</span><br><span class="line">    identityService.saveUser(user1);</span><br><span class="line">    User user2 = identityService.newUser(<span class="string">&quot;user2&quot;</span>);</span><br><span class="line">    identityService.saveUser(user2);</span><br><span class="line">    Group group1 = identityService.newGroup(<span class="string">&quot;group1&quot;</span>);</span><br><span class="line">    group1.setName(<span class="string">&quot;for test&quot;</span>);</span><br><span class="line">    identityService.saveGroup(group1);</span><br><span class="line">    identityService.createMembership(user1.getId(), group1.getId());</span><br><span class="line">    identityService.createMembership(user2.getId(), group1.getId());</span><br><span class="line">    <span class="comment">// 扩展信息</span></span><br><span class="line">    identityService.setUserInfo(user1.getId(), <span class="string">&quot;age&quot;</span>, <span class="string">&quot;18&quot;</span>);</span><br><span class="line">    identityService.setUserInfo(user1.getId(), <span class="string">&quot;identity&quot;</span>, <span class="string">&quot;destiny&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="4-运行时流程数据表"><a href="#4-运行时流程数据表" class="headerlink" title="4. 运行时流程数据表"></a>4. 运行时流程数据表</h1><table>
+<thead>
+<tr>
+<th>数据表分类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACT_RU_EXECUTION</td>
+<td>流程实例与分支执行信息</td>
+</tr>
+<tr>
+<td>ACT_RU_TASK</td>
+<td>用户任务信息</td>
+</tr>
+<tr>
+<td>ACT_RU_VARIABLE</td>
+<td>变量信息</td>
+</tr>
+<tr>
+<td>ACT_RU_IDENTITYLINK</td>
+<td>参与者相关信息</td>
+</tr>
+<tr>
+<td>ACT_RU_EVENT_SUBSCR</td>
+<td>事件监听表</td>
+</tr>
+<tr>
+<td>ACT_RU_JOB</td>
+<td>作业表</td>
+</tr>
+<tr>
+<td>ACT_RU_TIMER_JOB</td>
+<td>定时器表</td>
+</tr>
+<tr>
+<td>ACT_RU_SUSPENDED_JOB</td>
+<td>暂停作业表</td>
+</tr>
+<tr>
+<td>ACT_RU_DEADLETTER_JOB</td>
+<td>死信表</td>
+</tr>
+</tbody></table>
+<h2 id="4-1-ACT-RU-EXECUTION"><a href="#4-1-ACT-RU-EXECUTION" class="headerlink" title="4.1. ACT_RU_EXECUTION"></a>4.1. ACT_RU_EXECUTION</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.ExecutionEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PROC_INST_ID_</td>
+<td>流程实例 ID</td>
+</tr>
+<tr>
+<td>BUSINESS_KEY_</td>
+<td>业务标志</td>
+</tr>
+<tr>
+<td>PARENT_ID_</td>
+<td>父执行信息</td>
+</tr>
+<tr>
+<td>PROC_DEF_ID_</td>
+<td>流程定义 ID</td>
+</tr>
+<tr>
+<td>SUPER_EXEC_</td>
+<td>父流程实例对应的执行</td>
+</tr>
+<tr>
+<td>ACT_ID_</td>
+<td>流程定义节点 ID</td>
+</tr>
+<tr>
+<td>IS_ACTIVE</td>
+<td>是否活动的执行 0-非活动, 1-活动</td>
+</tr>
+<tr>
+<td>IS_CONCURRENT_</td>
+<td>是否并行分支 0-非, 1-是</td>
+</tr>
+<tr>
+<td>IS_SCOPE_</td>
+<td>是否全局流程执行 0-非, 1-是</td>
+</tr>
+<tr>
+<td>IS_EVENT_SCOPE_</td>
+<td>是否激活状态</td>
+</tr>
+<tr>
+<td>SUSPENSION_STATE</td>
+<td>挂起状态 1-正常, 2-挂起</td>
+</tr>
+<tr>
+<td>LOCK_TIME_</td>
+<td>锁定时间</td>
+</tr>
+</tbody></table>
+<h2 id="4-2-ACT-RU-TASK"><a href="#4-2-ACT-RU-TASK" class="headerlink" title="4.2. ACT_RU_TASK"></a>4.2. ACT_RU_TASK</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.TaskEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EXECUTION_ID_</td>
+<td>执行流 id</td>
+</tr>
+<tr>
+<td>PROC_INST_ID_</td>
+<td>流程实例 ID</td>
+</tr>
+<tr>
+<td>PROC_DEF_ID_</td>
+<td>流程定义 ID</td>
+</tr>
+<tr>
+<td>PARENT_TASK_ID_</td>
+<td>父任务</td>
+</tr>
+<tr>
+<td>TASK_DEF_KEY_</td>
+<td>任务定义 ID</td>
+</tr>
+<tr>
+<td>NAME_</td>
+<td>任务定义名称</td>
+</tr>
+<tr>
+<td>OWNER_</td>
+<td>拥有人</td>
+</tr>
+<tr>
+<td>ASSIGNEE_</td>
+<td>代理人</td>
+</tr>
+<tr>
+<td>DELEGATION_</td>
+<td>委托状态 PENDING-委托中, RESOLVED 已处理</td>
+</tr>
+<tr>
+<td>PRIORITY_</td>
+<td>优先级</td>
+</tr>
+<tr>
+<td>DUE_DATE_</td>
+<td>过期时间</td>
+</tr>
+<tr>
+<td>FORM_KEY_</td>
+<td>表单标志</td>
+</tr>
+</tbody></table>
+<h2 id="4-3-ACT-RU-VARIABLE"><a href="#4-3-ACT-RU-VARIABLE" class="headerlink" title="4.3. ACT_RU_VARIABLE"></a>4.3. ACT_RU_VARIABLE</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.VariableInstanceEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TYPE_</td>
+<td>变量名称(integer, string, double, json)</td>
+</tr>
+<tr>
+<td>NAME_</td>
+<td>变量名</td>
+</tr>
+<tr>
+<td>BYTEARRAY_ID_</td>
+<td>资源表 id</td>
+</tr>
+<tr>
+<td>DOUBLE_</td>
+<td>浮点值</td>
+</tr>
+<tr>
+<td>LONG_</td>
+<td>长整型数值</td>
+</tr>
+<tr>
+<td>TEXT_</td>
+<td>文本值</td>
+</tr>
+</tbody></table>
+<h2 id="4-4-ACT-RU-IDENTITYLINK"><a href="#4-4-ACT-RU-IDENTITYLINK" class="headerlink" title="4.4. ACT_RU_IDENTITYLINK"></a>4.4. ACT_RU_IDENTITYLINK</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.IdentityInfoEntityImpl</code></p>
+<blockquote>
+<p>当用户和流程建立关系的时候, 就会在此表中插入记录</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ID_</td>
+<td>主键</td>
+</tr>
+<tr>
+<td>GROUP_ID_</td>
+<td>用户组 ID</td>
+</tr>
+<tr>
+<td>TYPE_</td>
+<td>类型 assignee, candidate, owner, starter…</td>
+</tr>
+<tr>
+<td>USER_ID_</td>
+<td>用户 ID</td>
+</tr>
+<tr>
+<td>TASK_ID_</td>
+<td>任务 ID</td>
+</tr>
+<tr>
+<td>PROC_INST_ID_</td>
+<td>流程实例</td>
+</tr>
+</tbody></table>
+<h2 id="4-5-ACT-RU-EVENT-SUBSCR"><a href="#4-5-ACT-RU-EVENT-SUBSCR" class="headerlink" title="4.5. ACT_RU_EVENT_SUBSCR"></a>4.5. ACT_RU_EVENT_SUBSCR</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.EventSubscriptionEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EVENT_TYPE_</td>
+<td>事件类型 message, signal</td>
+</tr>
+<tr>
+<td>EVENT_NAME_</td>
+<td>事件名称</td>
+</tr>
+<tr>
+<td>EXECUTION_ID_</td>
+<td>流程执行 ID</td>
+</tr>
+<tr>
+<td>PROC_INST_ID_</td>
+<td>流程实例 ID</td>
+</tr>
+<tr>
+<td>ACTIVITY_ID_</td>
+<td>流程定义节点 ID</td>
+</tr>
+<tr>
+<td>CONFIGURATION_</td>
+<td>配置</td>
+</tr>
+</tbody></table>
+<h2 id="4-6-ACT-RU-JOB"><a href="#4-6-ACT-RU-JOB" class="headerlink" title="4.6. ACT_RU_JOB"></a>4.6. ACT_RU_JOB</h2><p>对应实体类 <code>org.activiti.engine.impl.persistence.entity.JobEntityImpl</code></p>
+<table>
+<thead>
+<tr>
+<th>关键字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TYPE_</td>
+<td>类型</td>
+</tr>
+<tr>
+<td>LOCK_EXP_TIME_</td>
+<td>锁定过期时间</td>
+</tr>
+<tr>
+<td>LOCK_OWNER_</td>
+<td>锁定接点</td>
+</tr>
+<tr>
+<td>EXCLUSIVE_</td>
+<td>是否唯一</td>
+</tr>
+<tr>
+<td>RETRIES_</td>
+<td>重试次数3</td>
+</tr>
+<tr>
+<td>REPEAT_</td>
+<td>重复表达式 R5/PT10S</td>
+</tr>
+<tr>
+<td>EXCEPTION_STACK_ID_</td>
+<td>异常堆栈(资源表 ID)</td>
+</tr>
+<tr>
+<td>EXCEPTION_MSG_</td>
+<td>异常信息</td>
+</tr>
+<tr>
+<td>DUEDATE_</td>
+<td>过期时间</td>
+</tr>
+<tr>
+<td>HANDLER_TYPE_</td>
+<td>处理器类型</td>
+</tr>
+<tr>
+<td>HANDLER_CFG</td>
+<td>处理器配置</td>
+</tr>
+<tr>
+<td>EXECUTION_ID_</td>
+<td>流程执行表 ID</td>
+</tr>
+</tbody></table>
+<h2 id="4-7-测试代码"><a href="#4-7-测试代码" class="headerlink" title="4.7 测试代码"></a>4.7 测试代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testRuntime</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Deployment deployment = activitiRule.getRepositoryService()</span><br><span class="line">            .createDeployment()</span><br><span class="line">            .name(<span class="string">&quot;二次审批&quot;</span>)</span><br><span class="line">            .addClasspathResource(<span class="string">&quot;org/destiny/activiti/SecondApprove.bpmn20.xml&quot;</span>)</span><br><span class="line">            .deploy();</span><br><span class="line">    log.info(<span class="string">&quot;deployment: &#123;&#125;&quot;</span>, deployment);</span><br><span class="line">    Map&lt;String, Object&gt; variables = Maps.newHashMap();</span><br><span class="line">    variables.put(<span class="string">&quot;k1&quot;</span>, <span class="string">&quot;v1&quot;</span>);</span><br><span class="line">    ProcessInstance processInstance = activitiRule.getRuntimeService()</span><br><span class="line">            .startProcessInstanceByKey(<span class="string">&quot;SecondApprove&quot;</span>, variables);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-7-1-ACT-RU-EXECUTION-表"><a href="#4-7-1-ACT-RU-EXECUTION-表" class="headerlink" title="4.7.1 ACT_RU_EXECUTION 表"></a>4.7.1 ACT_RU_EXECUTION 表</h3><p>执行完成后, <code>ACT_RU_EXECUTION</code> 表会生成如下两条记录, 流程启动和用户任务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">*************************** 1. row ***************************</span><br><span class="line">                  ID_: 5</span><br><span class="line">                 REV_: 1</span><br><span class="line">        PROC_INST_ID_: 5</span><br><span class="line">        BUSINESS_KEY_: NULL</span><br><span class="line">           PARENT_ID_: NULL</span><br><span class="line">         PROC_DEF_ID_: SecondApprove:1:4</span><br><span class="line">          SUPER_EXEC_: NULL</span><br><span class="line">   ROOT_PROC_INST_ID_: 5</span><br><span class="line">              ACT_ID_: NULL</span><br><span class="line">           IS_ACTIVE_: 1</span><br><span class="line">       IS_CONCURRENT_: 0</span><br><span class="line">            IS_SCOPE_: 1</span><br><span class="line">      IS_EVENT_SCOPE_: 0</span><br><span class="line">          IS_MI_ROOT_: 0</span><br><span class="line">    SUSPENSION_STATE_: 1</span><br><span class="line">    CACHED_ENT_STATE_: NULL</span><br><span class="line">           TENANT_ID_:</span><br><span class="line">                NAME_: NULL</span><br><span class="line">          START_TIME_: 2018-12-12 03:40:16.634</span><br><span class="line">       START_USER_ID_: NULL</span><br><span class="line">           LOCK_TIME_: NULL</span><br><span class="line">    IS_COUNT_ENABLED_: 0</span><br><span class="line">    EVT_SUBSCR_COUNT_: 0</span><br><span class="line">          TASK_COUNT_: 0</span><br><span class="line">           JOB_COUNT_: 0</span><br><span class="line">     TIMER_JOB_COUNT_: 0</span><br><span class="line">      SUSP_JOB_COUNT_: 0</span><br><span class="line">DEADLETTER_JOB_COUNT_: 0</span><br><span class="line">           VAR_COUNT_: 0</span><br><span class="line">       ID_LINK_COUNT_: 0</span><br><span class="line">*************************** 2. row ***************************</span><br><span class="line">                  ID_: 7</span><br><span class="line">                 REV_: 1</span><br><span class="line">        PROC_INST_ID_: 5</span><br><span class="line">        BUSINESS_KEY_: NULL</span><br><span class="line">           PARENT_ID_: 5</span><br><span class="line">         PROC_DEF_ID_: SecondApprove:1:4</span><br><span class="line">          SUPER_EXEC_: NULL</span><br><span class="line">   ROOT_PROC_INST_ID_: 5</span><br><span class="line">              ACT_ID_: submitApprove</span><br><span class="line">           IS_ACTIVE_: 1</span><br><span class="line">       IS_CONCURRENT_: 0</span><br><span class="line">            IS_SCOPE_: 0</span><br><span class="line">      IS_EVENT_SCOPE_: 0</span><br><span class="line">          IS_MI_ROOT_: 0</span><br><span class="line">    SUSPENSION_STATE_: 1</span><br><span class="line">    CACHED_ENT_STATE_: NULL</span><br><span class="line">           TENANT_ID_:</span><br><span class="line">                NAME_: NULL</span><br><span class="line">          START_TIME_: 2018-12-12 03:40:16.636</span><br><span class="line">       START_USER_ID_: NULL</span><br><span class="line">           LOCK_TIME_: NULL</span><br><span class="line">    IS_COUNT_ENABLED_: 0</span><br><span class="line">    EVT_SUBSCR_COUNT_: 0</span><br><span class="line">          TASK_COUNT_: 0</span><br><span class="line">           JOB_COUNT_: 0</span><br><span class="line">     TIMER_JOB_COUNT_: 0</span><br><span class="line">      SUSP_JOB_COUNT_: 0</span><br><span class="line">DEADLETTER_JOB_COUNT_: 0</span><br><span class="line">           VAR_COUNT_: 0</span><br><span class="line">       ID_LINK_COUNT_: 0</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>两条记录的 <code>PROC_DEF_ID_</code> 相同, 说明是同一个流程的实例.</li>
+<li>第一条记录的 <code>ID_</code> 是5, 第二条记录的 <code>PARENT_ID_</code> 是 5, 说明第二条是第一条生成的.</li>
+<li>第二条记录的 <code>ACT_ID_</code> 值为 submitApprove, 代表 userTask 的一个节点</li>
+<li>第二条记录的 <code>IS_SCOPE</code> 值为 0, 代表不是一个全局的执行流, 而第一条是一个全局执行流.</li>
+</ul>
+<h3 id="4-7-2-ACT-RU-TASK-表"><a href="#4-7-2-ACT-RU-TASK-表" class="headerlink" title="4.7.2 ACT_RU_TASK 表"></a>4.7.2 ACT_RU_TASK 表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">*************************** 1. row ***************************</span><br><span class="line">              ID_: 10</span><br><span class="line">             REV_: 1</span><br><span class="line">    EXECUTION_ID_: 7</span><br><span class="line">    PROC_INST_ID_: 5</span><br><span class="line">     PROC_DEF_ID_: SecondApprove:1:4</span><br><span class="line">            NAME_: 填写申请信息</span><br><span class="line">  PARENT_TASK_ID_: NULL</span><br><span class="line">     DESCRIPTION_: NULL</span><br><span class="line">    TASK_DEF_KEY_: submitApprove</span><br><span class="line">           OWNER_: NULL</span><br><span class="line">        ASSIGNEE_: NULL</span><br><span class="line">      DELEGATION_: NULL</span><br><span class="line">        PRIORITY_: 50</span><br><span class="line">     CREATE_TIME_: 2018-12-12 03:40:16.641</span><br><span class="line">        DUE_DATE_: NULL</span><br><span class="line">        CATEGORY_: NULL</span><br><span class="line">SUSPENSION_STATE_: 1</span><br><span class="line">       TENANT_ID_:</span><br><span class="line">        FORM_KEY_: NULL</span><br><span class="line">      CLAIM_TIME_: NULL</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>PROC_DEF_ID_</code> 为 SecondApprove:1:4</li>
+</ul>
+<h3 id="4-7-3-ACT-RU-VARIABLE-表"><a href="#4-7-3-ACT-RU-VARIABLE-表" class="headerlink" title="4.7.3. ACT_RU_VARIABLE 表"></a>4.7.3. ACT_RU_VARIABLE 表</h3><blockquote>
+<p>保存启动时候设置的变量</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">*************************** 1. row ***************************</span><br><span class="line">          ID_: 6</span><br><span class="line">         REV_: 1</span><br><span class="line">        TYPE_: string</span><br><span class="line">        NAME_: k1</span><br><span class="line">EXECUTION_ID_: 5</span><br><span class="line">PROC_INST_ID_: 5</span><br><span class="line">     TASK_ID_: NULL</span><br><span class="line">BYTEARRAY_ID_: NULL</span><br><span class="line">      DOUBLE_: NULL</span><br><span class="line">        LONG_: NULL</span><br><span class="line">        TEXT_: v1</span><br><span class="line">       TEXT2_: NULL</span><br></pre></td></tr></table></figure>
+
+<p>执行设置所属人的代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testSetOwner</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    TaskService taskService = activitiRule.getTaskService();</span><br><span class="line">    Task task = taskService</span><br><span class="line">            .createTaskQuery()</span><br><span class="line">            .processDefinitionKey(<span class="string">&quot;SecondApprove&quot;</span>)</span><br><span class="line">            .singleResult();</span><br><span class="line">    <span class="comment">// 设置所属人</span></span><br><span class="line">    taskService.setOwner(task.getId(), <span class="string">&quot;destiny&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-7-4-ACT-RU-IDENTITYLINK"><a href="#4-7-4-ACT-RU-IDENTITYLINK" class="headerlink" title="4.7.4 ACT_RU_IDENTITYLINK"></a>4.7.4 ACT_RU_IDENTITYLINK</h3><pre><code>*************************** 1. row ***************************
+          ID_: 2501
+         REV_: 1
+    GROUP_ID_: NULL
+        TYPE_: participant
+     USER_ID_: destiny
+     TASK_ID_: NULL
+PROC_INST_ID_: 5
+ PROC_DEF_ID_: NULL
+ 
+</code></pre>
+<p>而此时在 <code>ACT_RU_TASK</code> 表, 对应的 task 的 <code>OWNER_</code> 字段已经赋值为 destiny</p>
+<h3 id="4-7-5-ACT-RU-TASK"><a href="#4-7-5-ACT-RU-TASK" class="headerlink" title="4.7.5 ACT_RU_TASK"></a>4.7.5 ACT_RU_TASK</h3><pre><code>*************************** 1. row ***************************
+              ID_: 10
+             REV_: 2
+    EXECUTION_ID_: 7
+    PROC_INST_ID_: 5
+     PROC_DEF_ID_: SecondApprove:1:4
+            NAME_: 填写申请信息
+  PARENT_TASK_ID_: NULL
+     DESCRIPTION_: NULL
+    TASK_DEF_KEY_: submitApprove
+           OWNER_: destiny
+        ASSIGNEE_: NULL
+      DELEGATION_: NULL
+        PRIORITY_: 50
+     CREATE_TIME_: 2018-12-12 07:19:33.134
+        DUE_DATE_: NULL
+        CATEGORY_: NULL
+SUSPENSION_STATE_: 1
+       TENANT_ID_:
+        FORM_KEY_: NULL
+      CLAIM_TIME_: NULL
+      
+</code></pre>
+<h1 id="5-历史流程数据表"><a href="#5-历史流程数据表" class="headerlink" title="5. 历史流程数据表"></a>5. 历史流程数据表</h1><table>
+<thead>
+<tr>
+<th>数据表分类</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACT_HI_PROCINST</td>
+<td>历史流程实例表</td>
+</tr>
+<tr>
+<td>ACT_HI_ACTINST</td>
+<td>历史节点信息表, 执行过程中每经过一个节点就会插入一条记录</td>
+</tr>
+<tr>
+<td>ACT_HI_TASKINST</td>
+<td>历史任务表</td>
+</tr>
+<tr>
+<td>ACT_HI_VARINST</td>
+<td>历史变量</td>
+</tr>
+<tr>
+<td>ACT_HI_IDENTITYLINK</td>
+<td>历史参与者</td>
+</tr>
+<tr>
+<td>ACT_HI_DETAIL</td>
+<td>历史变更, 当使用 FormService 提交表单时, 表单的属性就会存储在该表, 以及变量的更改</td>
+</tr>
+<tr>
+<td>ACT_HI_ATTACHMENT</td>
+<td>附件</td>
+</tr>
+<tr>
+<td>ACT_HI_COMMENT</td>
+<td>评论</td>
+</tr>
+<tr>
+<td>ACT_EVT_LOG</td>
+<td>事件日志</td>
+</tr>
+</tbody></table>
+<h2 id="5-1-ACT-HI-PROCINST"><a href="#5-1-ACT-HI-PROCINST" class="headerlink" title="5.1 ACT_HI_PROCINST"></a>5.1 ACT_HI_PROCINST</h2><p>| 关键字段 | </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/Activiti/" rel="tag"># Activiti</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/12/08/Activiti-2-BPMN2-0%E8%A7%84%E8%8C%83/" rel="next" title="Activiti(2)--BPMN2.0规范">
+                <i class="fa fa-chevron-left"></i> Activiti(2)--BPMN2.0规范
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/12/16/Activiti-4-%E5%A4%9A%E5%AE%9E%E4%BE%8B%E5%AE%9E%E7%8E%B0%E4%BC%9A%E7%AD%BE%E5%8A%9F%E8%83%BD/" rel="prev" title="Activiti(4)--多实例实现会签功能">
+                Activiti(4)--多实例实现会签功能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/blog/archives">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/blog/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E9%80%9A%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-text">1. 通用数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-ACT-GE-PROPERTY"><span class="nav-text">1.1. ACT_GE_PROPERTY</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-ACT-GE-BYTEARRAY"><span class="nav-text">1.2 ACT_GE_BYTEARRAY</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89%E5%AD%98%E5%82%A8%E8%A1%A8"><span class="nav-text">2. 流程定义存储表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-ACT-RE-DEPLOYMENT"><span class="nav-text">2.1. ACT_RE_DEPLOYMENT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-ACT-RE-PROCDEF"><span class="nav-text">2.2 ACT_RE_PROCDEF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="nav-text">2.3. 测试代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%BA%AB%E4%BB%BD%E6%95%B0%E6%8D%AE%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="nav-text">3. 身份数据表设计</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF%E8%A1%A8"><span class="nav-text">3.1. 用户信息表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E7%94%A8%E6%88%B7%E6%89%A9%E5%B1%95%E4%BF%A1%E6%81%AF"><span class="nav-text">3.2. 用户扩展信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-ACT-ID-GROUP"><span class="nav-text">3.3. ACT_ID_GROUP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-%E7%94%A8%E6%88%B7%E7%BB%84%E5%85%B3%E7%B3%BB%E8%A1%A8"><span class="nav-text">3.4. 用户组关系表</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%B5%81%E7%A8%8B%E6%95%B0%E6%8D%AE%E8%A1%A8"><span class="nav-text">4. 运行时流程数据表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-ACT-RU-EXECUTION"><span class="nav-text">4.1. ACT_RU_EXECUTION</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-ACT-RU-TASK"><span class="nav-text">4.2. ACT_RU_TASK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-ACT-RU-VARIABLE"><span class="nav-text">4.3. ACT_RU_VARIABLE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-ACT-RU-IDENTITYLINK"><span class="nav-text">4.4. ACT_RU_IDENTITYLINK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-5-ACT-RU-EVENT-SUBSCR"><span class="nav-text">4.5. ACT_RU_EVENT_SUBSCR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-6-ACT-RU-JOB"><span class="nav-text">4.6. ACT_RU_JOB</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-7-%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="nav-text">4.7 测试代码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-1-ACT-RU-EXECUTION-%E8%A1%A8"><span class="nav-text">4.7.1 ACT_RU_EXECUTION 表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-2-ACT-RU-TASK-%E8%A1%A8"><span class="nav-text">4.7.2 ACT_RU_TASK 表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-3-ACT-RU-VARIABLE-%E8%A1%A8"><span class="nav-text">4.7.3. ACT_RU_VARIABLE 表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-4-ACT-RU-IDENTITYLINK"><span class="nav-text">4.7.4 ACT_RU_IDENTITYLINK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-7-5-ACT-RU-TASK"><span class="nav-text">4.7.5 ACT_RU_TASK</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%8E%86%E5%8F%B2%E6%B5%81%E7%A8%8B%E6%95%B0%E6%8D%AE%E8%A1%A8"><span class="nav-text">5. 历史流程数据表</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-ACT-HI-PROCINST"><span class="nav-text">5.1 ACT_HI_PROCINST</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate"> 
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">destiny</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i>
+  <span id="busuanzi_container_site_uv">本站访客数:<span id="busuanzi_value_site_uv"></span></span>
+  
+  <!-- 由 <a class="theme-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 强力驱动 -->
+  </div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Code Alone </div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=6.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=6.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=6.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=6.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=6.1.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/love.js"></script>>

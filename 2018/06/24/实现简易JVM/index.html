@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=6.1.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=6.1.0">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=6.1.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '6.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. 概述  Java 源代码经过编译生成 class 文件 在不同的操作系统上分别实现 JVM, JVM 在不同操作系统上实现差异很大, 如线程, 图形界面等, 由 JVM 屏蔽与操作系统的接口   1.1 Class 文件格式 1.1.1 魔数 &amp; 版本 &amp; 常量池个数  Magic Number  确定这是一个 Java 文件   Minor &#x2F; Major Version:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现简易JVM">
+<meta property="og:url" content="https://destinywang.github.io/blog/2018/06/24/%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93JVM/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="1. 概述  Java 源代码经过编译生成 class 文件 在不同的操作系统上分别实现 JVM, JVM 在不同操作系统上实现差异很大, 如线程, 图形界面等, 由 JVM 屏蔽与操作系统的接口   1.1 Class 文件格式 1.1.1 魔数 &amp; 版本 &amp; 常量池个数  Magic Number  确定这是一个 Java 文件   Minor &#x2F; Major Version:">
+<meta property="og:locale">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-23/68954491.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-23/18183015.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-23/7574723.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-23/37222872.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-23/57215332.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/71745531.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/2593924.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/39159076.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/5082789.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/64108809.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/90661799.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/74913726.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/81556783.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/9057717.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/54920383.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/51804525.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/51718592.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/11946975.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-24/56894058.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-25/6624730.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-25/90459462.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/52634127.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/55866163.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/56559512.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/3305320.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/78725468.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/44315742.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/31300372.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/9829577.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/3230642.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/18433274.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/25073553.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/36898043.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-26/32409326.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-7-1/2187429.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-7-1/13981658.jpg">
+<meta property="og:image" content="http://oetw0yrii.bkt.clouddn.com/18-7-1/2587031.jpg">
+<meta property="article:published_time" content="2018-06-24T15:07:51.000Z">
+<meta property="article:modified_time" content="2018-07-01T15:04:36.000Z">
+<meta property="article:author" content="destiny">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oetw0yrii.bkt.clouddn.com/18-6-23/68954491.jpg">
+
+
+
+  <link rel="alternate" href="/blog/atom.xml" title="Hexo" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://destinywang.github.io/blog/2018/06/24/实现简易JVM/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>实现简易JVM | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/destinywang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/blog/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/blog/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />归档</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-categories">
+    <a href="/blog/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />分类</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/blog/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-about">
+    <a href="/blog/about" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />关于</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-search">
+    <a href="/blog/search" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />搜索</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-commonweal">
+    <a href="/blog/404.html" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />公益 404</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-something">
+    <a href="/blog/something" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />something</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://destinywang.github.io/blog/blog/2018/06/24/%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93JVM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">实现简易JVM</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-24T23:07:51+08:00">2018-06-24</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/JVM/" itemprop="url" rel="index"><span itemprop="name">JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-23/68954491.jpg"></p>
+<ol>
+<li>Java 源代码经过编译生成 class 文件</li>
+<li>在不同的操作系统上分别实现 JVM, JVM 在不同操作系统上实现差异很大, 如线程, 图形界面等, 由 JVM 屏蔽与操作系统的接口</li>
+</ol>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-23/18183015.jpg"></p>
+<h2 id="1-1-Class-文件格式"><a href="#1-1-Class-文件格式" class="headerlink" title="1.1 Class 文件格式"></a>1.1 Class 文件格式</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-23/7574723.jpg"></p>
+<h3 id="1-1-1-魔数-amp-版本-amp-常量池个数"><a href="#1-1-1-魔数-amp-版本-amp-常量池个数" class="headerlink" title="1.1.1 魔数 &amp; 版本 &amp; 常量池个数"></a>1.1.1 魔数 &amp; 版本 &amp; 常量池个数</h3><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-23/37222872.jpg"></p>
+<ul>
+<li>Magic Number <ul>
+<li>确定这是一个 Java 文件</li>
+</ul>
+</li>
+<li>Minor / Major Version: 版本号</li>
+<li>16 进制<ul>
+<li>Major Version (0x34) = 52</li>
+<li>常量池个数 (0x36) = 54</li>
+</ul>
+</li>
+<li>大端模式(Big-Endian): 高位在前<ul>
+<li><code>00 36</code> 而不是 <code>36 00</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="1-1-2-常量池"><a href="#1-1-2-常量池" class="headerlink" title="1.1.2 常量池"></a>1.1.2 常量池</h3><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-23/57215332.jpg"></p>
+<p><code>0036</code> 代表常量池常量的个数, 后面的 <code>07</code> 通过查表发现含义为 <code>ClassInfo</code> 的 <code>tag</code> 值, 而 <code>name_index</code> 值为 2, 代表类名在第二个常量中.</p>
+<p>第二个常量开头为 <code>01</code>, 查表得知是一个 <code>Utf8</code> 字符串, <code>0021</code> 代表长度 <code>length</code> 值为 33. 而后面 33 个字节 <code>63 6F 6D 2F 63 6F 64 65 72 69 73 69 6E 67 2F 65 78 61 6D 70 6C 65 2F 45 6D 70 6C 6F 79 65 65 56 31</code> 转换成字符串之后的值为 <code>com/coderising/example/EmployeeV1</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CONSTANT_Class_info &#123;</span><br><span class="line">    u1 tag;         &#x2F;&#x2F; 值为7</span><br><span class="line">    u2 name_index;  &#x2F;&#x2F; 名称索引</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CONSTANT_Utf8_info &#123;</span><br><span class="line">    u1 tag;             &#x2F;&#x2F; 值为1</span><br><span class="line">    u2 length;          &#x2F;&#x2F; 长度</span><br><span class="line">    u1 bytes[length];   &#x2F;&#x2F; 内容</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-2-1-常量池实例"><a href="#1-1-2-1-常量池实例" class="headerlink" title="1.1.2.1 常量池实例"></a>1.1.2.1 常量池实例</h4><table>
+<thead>
+<tr>
+<th align="center">索引</th>
+<th align="center">类型</th>
+<th align="center">操作数 1</th>
+<th align="center">操作数 2</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">#1</td>
+<td align="center">ClassInfo</td>
+<td align="center">#2</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">#2</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">org/destiny/jvm/model/Employee</td>
+</tr>
+<tr>
+<td align="center">#3</td>
+<td align="center">ClassInfo</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">#4</td>
+</tr>
+<tr>
+<td align="center">#4</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">java/lang/Object</td>
+</tr>
+<tr>
+<td align="center">#5</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">name</td>
+</tr>
+<tr>
+<td align="center">#6</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">Ljava/lang/String</td>
+</tr>
+<tr>
+<td align="center">#7</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">age</td>
+</tr>
+<tr>
+<td align="center">#8</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">I</td>
+</tr>
+<tr>
+<td align="center">#9</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"><init></td>
+</tr>
+<tr>
+<td align="center">#10</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">…</td>
+</tr>
+<tr>
+<td align="center">#11</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">…</td>
+</tr>
+<tr>
+<td align="center">#12</td>
+<td align="center">MethodRef</td>
+<td align="center">#3</td>
+<td align="center">#13</td>
+<td align="center"><code>java.lang.Object&lt;init&gt;()V</code></td>
+</tr>
+<tr>
+<td align="center">#13</td>
+<td align="center">NameAndType</td>
+<td align="center">#9</td>
+<td align="center">#14</td>
+<td align="center"><code>&lt;init&gt;()V</code></td>
+</tr>
+<tr>
+<td align="center">#14</td>
+<td align="center">Utf8</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">()V</td>
+</tr>
+<tr>
+<td align="center">#15</td>
+<td align="center">FieldRef</td>
+<td align="center">#1</td>
+<td align="center">#16</td>
+<td align="center"><code>org/destiny/jvm/model/Employee 包含一个 Ljava/lang/String 类型的变量 name</code></td>
+</tr>
+<tr>
+<td align="center">#16</td>
+<td align="center">NameAndType</td>
+<td align="center">#5</td>
+<td align="center">#6</td>
+<td align="center"><code>Ljava/lang/String 类型的变量 name</code></td>
+</tr>
+</tbody></table>
+<h3 id="1-1-3-访问标志"><a href="#1-1-3-访问标志" class="headerlink" title="1.1.3 访问标志"></a>1.1.3 访问标志</h3><table>
+<thead>
+<tr>
+<th align="center">标志名称</th>
+<th align="center">标志值</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ACC_PUBLIC</td>
+<td align="center">0x0001</td>
+<td align="center">public 类型</td>
+</tr>
+<tr>
+<td align="center">ACC_FINAL</td>
+<td align="center">0x0002</td>
+<td align="center">声明为 final 类型</td>
+</tr>
+<tr>
+<td align="center">ACC_SUPER</td>
+<td align="center">0x0020</td>
+<td align="center">是否允许使用 <code>invokespecial</code> 字节码指令的新语义</td>
+</tr>
+<tr>
+<td align="center">ACC_INTERFACE</td>
+<td align="center">0x0200</td>
+<td align="center">声明为接口</td>
+</tr>
+<tr>
+<td align="center">ACC_ABSTRACT</td>
+<td align="center">0x0400</td>
+<td align="center">Abstract 类型</td>
+</tr>
+<tr>
+<td align="center">ACC_SYNTHETIC</td>
+<td align="center">0x1000</td>
+<td align="center">这个类并非由用户代码产生</td>
+</tr>
+<tr>
+<td align="center">ACC_ANNOTATION</td>
+<td align="center">0x2000</td>
+<td align="center">注解</td>
+</tr>
+<tr>
+<td align="center">ACC_ENUM</td>
+<td align="center">0x4000</td>
+<td align="center">枚举</td>
+</tr>
+</tbody></table>
+<h3 id="1-1-4-类索引-父类索引"><a href="#1-1-4-类索引-父类索引" class="headerlink" title="1.1.4 类索引, 父类索引"></a>1.1.4 类索引, 父类索引</h3><pre><code>类索引和父类索引都是指向常量池的索引
+</code></pre>
+<p>由于 Java 采用动态连接</p>
+<p>动态连接是一个将符号引用解析为直接引用的过程。当java虚拟机执行字节码时，如果它遇到一个操作码，这个操作码第一次使用一个指向另一个类的符号引用</p>
+<p>那么虚拟机就必须解析这个符号引用。在解析时，虚拟机执行两个基本任务</p>
+<ol>
+<li>查找被引用的类，（如果必要的话就装载它）</li>
+<li>将符号引用替换为直接引用，这样当它以后再次遇到相同的引用时，它就可以立即使用这个直接引用，而不必花时间再次解析这个符号引用了。</li>
+</ol>
+<h3 id="1-1-5-接口"><a href="#1-1-5-接口" class="headerlink" title="1.1.5 接口"></a>1.1.5 接口</h3><h3 id="1-1-6-字段"><a href="#1-1-6-字段" class="headerlink" title="1.1.6 字段"></a>1.1.6 字段</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">u2 fields_count;         &#x2F;&#x2F; 字段数量</span><br><span class="line"></span><br><span class="line">field_info &#123;</span><br><span class="line">    u2 access_flags;                            &#x2F;&#x2F; 访问控制符</span><br><span class="line">    u2 name_index;                              &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 descriptor_index;                        &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 attribute_count;                         &#x2F;&#x2F; 该字段的属性数量</span><br><span class="line">    attribute_info attributes[attribute_count]; &#x2F;&#x2F; 属性信息</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>标志字符含义</p>
+<table>
+<thead>
+<tr>
+<th>header 1</th>
+<th>header 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>B</td>
+<td>byte</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>V</td>
+<td>void</td>
+</tr>
+<tr>
+<td>L</td>
+<td>对象类型的通用前缀, 如 <code>Ljava/lang/Object</code></td>
+</tr>
+</tbody></table>
+<h3 id="1-1-7-方法"><a href="#1-1-7-方法" class="headerlink" title="1.1.7 方法"></a>1.1.7 方法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">u2 methods_count;           &#x2F;&#x2F; 方法数量</span><br><span class="line"></span><br><span class="line">method_info &#123;</span><br><span class="line">    u2 access_flags;                &#x2F;&#x2F; 访问标志</span><br><span class="line">    u2 name_index;                  &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 descriptor_index;            &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 attributes_count;            &#x2F;&#x2F; 该字段的属性数量</span><br><span class="line">    attribute_info attributes[attributes_count];    &#x2F;&#x2F; 属性信息</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>(Ljava/lang/String;)V</code> 表示 <code>参数为 String, 返回值为 void 的方法</code><br><code>(Ljava/lang/String;IF)V</code> 表示 <code>参数为 String, int, float, 返回值为 void 的方法</code></p>
+</blockquote>
+<h3 id="1-1-8-属性"><a href="#1-1-8-属性" class="headerlink" title="1.1.8 属性"></a>1.1.8 属性</h3><ul>
+<li>方法和字段都可能有属性<ul>
+<li>方法中可能有 <code>Code</code> 属性, 字段可能有 <code>Constant Value</code> 属性</li>
+</ul>
+</li>
+<li>属性中可能嵌套属性<ul>
+<li><code>code</code> 属性中还可能有 <code>Line Number Table</code>, <code>Local Variable Table</code>, <code>Stack Map Table</code> 等属性</li>
+</ul>
+</li>
+<li>虚拟机的实现中还可以自定义属性</li>
+</ul>
+<h4 id="1-1-8-1-Constant-Value"><a href="#1-1-8-1-Constant-Value" class="headerlink" title="1.1.8.1 Constant Value"></a>1.1.8.1 Constant Value</h4><pre><code>如果某字段为静态类型(access_flag 中包含 ACC_STATIC 标志)
+将会被分配 Constant Value 属性
+</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ConstantValue_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;    <span class="comment">// 必须是对常量池的一个有效索引, 常量池在该索引处的项必须是 UTF8Info, 表示字符串 &quot;ConstantValue&quot;</span></span><br><span class="line">    u4 attribute_length;        <span class="comment">// 固定为 2</span></span><br><span class="line">    u2 constantvalue_index;     <span class="comment">// 必须是对常量池的一个有效索引, 常量池在该索引处的项给出该属性表示的常量值, 可能的值有 Constant_String, Constant_Long 等</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-8-2-Code"><a href="#1-1-8-2-Code" class="headerlink" title="1.1.8.2 Code"></a>1.1.8.2 Code</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Code_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;            <span class="comment">// 指向常量池, 应该是 UTF8Info, 且值为 &quot;Code&quot;</span></span><br><span class="line">    u4 attribute_length;                <span class="comment">// 属性长度, 不包括开始的 6 个字节</span></span><br><span class="line">    u2 max_stack;                       <span class="comment">// 操作数栈的最大深度</span></span><br><span class="line">    u2 max_locals;                      <span class="comment">// 最大局部变量表个数</span></span><br><span class="line">    u4 code_length;                     <span class="comment">// 该方法的代码长度</span></span><br><span class="line">    u1 code[code_length];               <span class="comment">// 真正的字节码</span></span><br><span class="line">    u2 exception_table_length;          <span class="comment">// 捕获异常表的长度</span></span><br><span class="line">    &#123;</span><br><span class="line">        u2 start_pc;        <span class="comment">// 捕获起始地址</span></span><br><span class="line">        u2 end_pc;          <span class="comment">// 捕获结束地址</span></span><br><span class="line">        u2 handler_pc;      <span class="comment">// </span></span><br><span class="line">        u2 catch_type;      <span class="comment">// 异常类型</span></span><br><span class="line">    &#125; exception_table[exception_table_length];  <span class="comment">// 捕获异常表</span></span><br><span class="line">    u2 attributes_count;                <span class="comment">// </span></span><br><span class="line">    attribute_info attributes[attributes_count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Code 属性中的字节码</strong></p>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/71745531.jpg"></p>
+<table>
+<thead>
+<tr>
+<th align="center">字节码</th>
+<th align="center">命令</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">2A</td>
+<td align="center">aload_0</td>
+<td align="center">从局部变量表第 0 个值压入操作数栈</td>
+</tr>
+<tr>
+<td align="center">B4 00 15</td>
+<td align="center">getfield #21</td>
+<td align="center">获取对象的字段值</td>
+</tr>
+<tr>
+<td align="center">10 1E</td>
+<td align="center">bipush 30</td>
+<td align="center">将 30 压入栈中</td>
+</tr>
+<tr>
+<td align="center">A2 00 0E</td>
+<td align="center">if_icmp_ge 20</td>
+<td align="center">将当前</td>
+</tr>
+</tbody></table>
+<h4 id="1-1-8-3-LineNumber"><a href="#1-1-8-3-LineNumber" class="headerlink" title="1.1.8.3 LineNumber"></a>1.1.8.3 LineNumber</h4><pre><code>code属性的一个子属性
+可选的变长属性, 维护 Java 源代码行号与字节码行号(偏移量之间的对应关系)
+</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">LineNumberTable_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;</span><br><span class="line">    u4 attribute_length;</span><br><span class="line">    u2 line_number_table_length;</span><br><span class="line">    &#123;</span><br><span class="line">        u2 start_pc;        <span class="comment">// 字节码偏移量</span></span><br><span class="line">        u2 line_number;     <span class="comment">// 行号</span></span><br><span class="line">    &#125; line_number_table[line_number_table_length];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-8-4-LocalVariableTable-属性"><a href="#1-1-8-4-LocalVariableTable-属性" class="headerlink" title="1.1.8.4 LocalVariableTable 属性"></a>1.1.8.4 LocalVariableTable 属性</h4><pre><code>code属性的一个子属性
+可选的变长属性, 维护栈帧中局部变量表中变量与 Java 源码中定义变量的关系
+</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">LocalVariableTable_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;</span><br><span class="line">    u4 attribute_length;</span><br><span class="line">    u2 local_variable_table_length;</span><br><span class="line">    &#123;</span><br><span class="line">        u2 start_pc;            <span class="comment">// 局部变量位于 [start_pc, start_pc + length)之间</span></span><br><span class="line">        u2 length;</span><br><span class="line">        u2 name_index;          <span class="comment">// 局部变量的名称索引</span></span><br><span class="line">        u2 descriptor_index;    <span class="comment">// 局部变量的描述符索引</span></span><br><span class="line">        u2 index;               <span class="comment">// 局部变量在栈帧中的索引</span></span><br><span class="line">    &#125; local_variable_table[local_variable_table_length];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-JVM-运行时动态行为"><a href="#1-2-JVM-运行时动态行为" class="headerlink" title="1.2 JVM 运行时动态行为"></a>1.2 JVM 运行时动态行为</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/2593924.jpg"></p>
+<ul>
+<li>线程中包含函数栈帧, 其中每个函数帧表示某一个函数的调用过程</li>
+<li>在每一个函数帧的内部, JVM 又细分了 <code>局部变量表</code>, <code>操作数栈</code> 等</li>
+<li>局部变量和操作数栈中的变量会引用堆中的对象</li>
+<li>常量池引用指向方法区, 方法区保存了类的元数据以及方法的字节码</li>
+</ul>
+<h3 id="1-2-1-实例"><a href="#1-2-1-实例" class="headerlink" title="1.2.1 实例"></a>1.2.1 实例</h3><p>Java 源码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> num = i + j;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">demo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        add(<span class="number">10</span>, <span class="number">20</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>转换成字节码后:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">demo:</span><br><span class="line"><span class="number">0</span>: aload_0</span><br><span class="line"><span class="number">1</span>: bipush   <span class="number">10</span></span><br><span class="line"><span class="number">3</span>: bipush   <span class="number">20</span></span><br><span class="line"><span class="number">5</span>: invokevirtial    #<span class="number">2</span></span><br><span class="line"><span class="number">8</span>: <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">add:</span><br><span class="line"><span class="number">0</span>: aload_1</span><br><span class="line"><span class="number">1</span>: aload_2</span><br><span class="line"><span class="number">2</span>: iadd</span><br><span class="line"><span class="number">3</span>: istore_3</span><br><span class="line"><span class="number">4</span>: <span class="keyword">return</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/39159076.jpg"></p>
+<p>调用 <code>add</code> 函数, 生成新的函数帧</p>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/5082789.jpg"></p>
+<p><code>0: aload_1</code>: 将局部变量表第 1 个变量压入操作数栈;<br><code>1: aload_2</code>: 将局部变量表第 2 个变量压入操作数栈;<br><code>2: iadd</code>: 将操作数栈顶端的两个元素弹出, 相加并将结果压入栈顶<br><code>3: istore_3</code>: 将操作数栈栈顶元素放在局部变量表第 3 个元素中<br><code>4: return</code>: 执行完毕</p>
+<h1 id="2-ClassLoader"><a href="#2-ClassLoader" class="headerlink" title="2. ClassLoader"></a>2. ClassLoader</h1><h2 id="2-1-Java-是动态链接"><a href="#2-1-Java-是动态链接" class="headerlink" title="2.1 Java 是动态链接"></a>2.1 Java 是动态链接</h2><ul>
+<li>C: 编译 -&gt; 链接 -&gt; 生成 <code>.exe</code> -&gt; 执行<ul>
+<li>函数 A 调用函数 B, 在链接时会直接在函数 A 中记录函数 B 的地址</li>
+</ul>
+</li>
+<li>Java: 编译 -&gt; <code>.class</code> -&gt; 装载执行<ul>
+<li>类 A 中使用了另一个类 B, 在 A.class 中只保存类 B 的名称, 而不会保留 B 的 “地址”</li>
+<li>在运行时根据名称来查找类, 装载类</li>
+</ul>
+</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/64108809.jpg"></p>
+<h2 id="2-2-类加载器的委托模型"><a href="#2-2-类加载器的委托模型" class="headerlink" title="2.2 类加载器的委托模型"></a>2.2 类加载器的委托模型</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/90661799.jpg"></p>
+<p>工作原理</p>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/74913726.jpg"></p>
+<h2 id="2-3-类加载器的命名空间"><a href="#2-3-类加载器的命名空间" class="headerlink" title="2.3 类加载器的命名空间"></a>2.3 类加载器的命名空间</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/81556783.jpg"></p>
+<p><code>类加载器 + 类名</code> 唯一确定一个类, 只有同一个加载器加载的类才是相同的类.</p>
+<h2 id="2-4-验证"><a href="#2-4-验证" class="headerlink" title="2.4 验证"></a>2.4 验证</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/9057717.jpg"></p>
+<h2 id="2-5-自定义类加载器"><a href="#2-5-自定义类加载器" class="headerlink" title="2.5 自定义类加载器"></a>2.5 自定义类加载器</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyClassLoader</span> <span class="keyword">extends</span> <span class="title">ClassLoader</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> List&lt;String&gt; classPaths = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">        <span class="keyword">byte</span>[] byteCodes = loadByteCode(name);</span><br><span class="line">        <span class="keyword">if</span> (byteCodes == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ClassNotFoundException();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> defineClass(name, byteCodes, <span class="number">0</span>, byteCodes.length);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] loadClassFile(String classFileName) &#123;</span><br><span class="line">        <span class="keyword">for</span> (String classPath: classPaths) &#123;</span><br><span class="line">            String realPath = classPath + File.separatorChar + classFileName.replace(<span class="string">&#x27;.&#x27;</span>, File.separatorChar) + <span class="string">&quot;.class&quot;</span>;</span><br><span class="line">            </span><br><span class="line">            File file = <span class="keyword">new</span> File(classFileName);</span><br><span class="line">            <span class="keyword">if</span> (file.exists()) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> IOUtils.toByteArray(<span class="keyword">new</span> FileInputStream(file));</span><br><span class="line">                &#125; <span class="keyword">catch</span> (FileNotFoundException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>DefineClass</code> 方法</p>
+<ul>
+<li><code>protected final Class&lt;?&gt; defineClass(String name, byte[] b, int off, int length) throws ClassFormatError;</code></li>
+<li>只要传递给该方法一个合法字节数组, 就可以转化成一个 Class 对象, 这就意味着可以从任何地方组装类:<ul>
+<li>磁盘</li>
+<li>zip 文件</li>
+<li>网络</li>
+<li>运行时动态生成</li>
+</ul>
+</li>
+</ul>
+<h1 id="3-常量池"><a href="#3-常量池" class="headerlink" title="3. 常量池"></a>3. 常量池</h1><h2 id="3-1-常见结构"><a href="#3-1-常见结构" class="headerlink" title="3.1 常见结构"></a>3.1 常见结构</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/54920383.jpg"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">CONSTANT_Class_info &#123;</span><br><span class="line">    u1 tag;         <span class="comment">// 7</span></span><br><span class="line">    u2 name_index;  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CONSTANT_Utf8_info &#123;</span><br><span class="line">    u1 tag;             <span class="comment">// 1</span></span><br><span class="line">    u2 length;          <span class="comment">// 长度</span></span><br><span class="line">    u1 bytes[length];   <span class="comment">// content</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CONSTANT_String_info &#123;</span><br><span class="line">    u1 tag;             <span class="comment">// </span></span><br><span class="line">    u2 string_index;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CONSTANT_Fieldref_info &#123;</span><br><span class="line">    u1 tag;             <span class="comment">// 9</span></span><br><span class="line">    u2 class_index;     <span class="comment">// </span></span><br><span class="line">    u2 name_and_type_index;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CONSTANT_Methodref_info &#123;</span><br><span class="line">    u1 tag;             <span class="comment">// 10</span></span><br><span class="line">    u2 class_index;</span><br><span class="line">    u2 name_and_type_index;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">CONSTANT_NameAndType_info &#123;</span><br><span class="line">    u1 tag;             <span class="comment">// 12</span></span><br><span class="line">    u2 class_index;</span><br><span class="line">    u2 descriptor_index;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/51804525.jpg"></p>
+<h2 id="3-2-访问标志"><a href="#3-2-访问标志" class="headerlink" title="3.2 访问标志"></a>3.2 访问标志</h2><table>
+<thead>
+<tr>
+<th align="center">标志名称</th>
+<th align="center">标志值</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ACC_PUBLIC</td>
+<td align="center">0x0001</td>
+<td align="center">public 类型</td>
+</tr>
+<tr>
+<td align="center">ACC_FINAL</td>
+<td align="center">0x0002</td>
+<td align="center">声明为 final 类型</td>
+</tr>
+<tr>
+<td align="center">ACC_SUPER</td>
+<td align="center">0x0020</td>
+<td align="center">是否允许使用 <code>invokespecial</code> 字节码指令的新语义</td>
+</tr>
+<tr>
+<td align="center">ACC_INTERFACE</td>
+<td align="center">0x0200</td>
+<td align="center">声明为接口</td>
+</tr>
+<tr>
+<td align="center">ACC_ABSTRACT</td>
+<td align="center">0x0400</td>
+<td align="center">Abstract 类型</td>
+</tr>
+<tr>
+<td align="center">ACC_SYNTHETIC</td>
+<td align="center">0x1000</td>
+<td align="center">这个类并非由用户代码产生</td>
+</tr>
+<tr>
+<td align="center">ACC_ANNOTATION</td>
+<td align="center">0x2000</td>
+<td align="center">注解</td>
+</tr>
+<tr>
+<td align="center">ACC_ENUM</td>
+<td align="center">0x4000</td>
+<td align="center">枚举</td>
+</tr>
+</tbody></table>
+<h1 id="4-字段-amp-方法"><a href="#4-字段-amp-方法" class="headerlink" title="4. 字段 &amp; 方法"></a>4. 字段 &amp; 方法</h1><h2 id="4-1-字段"><a href="#4-1-字段" class="headerlink" title="4.1 字段"></a>4.1 字段</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">u2 fields_count;         &#x2F;&#x2F; 字段数量</span><br><span class="line"></span><br><span class="line">field_info &#123;</span><br><span class="line">    u2 access_flags;                            &#x2F;&#x2F; 访问控制符</span><br><span class="line">    u2 name_index;                              &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 descriptor_index;                        &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 attribute_count;                         &#x2F;&#x2F; 该字段的属性数量</span><br><span class="line">    attribute_info attributes[attribute_count]; &#x2F;&#x2F; 属性信息</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/51718592.jpg"></p>
+<p>可以看到上图中有两个字段, 分别为 <code>String</code> 类型的 <code>name</code>, 和 <code>int</code> 类型的 <code>age</code></p>
+<ul>
+<li><code>Name Index</code> 表示常量池中变量名称的索引</li>
+<li><code>Desc Index</code> 表示常量池中变量类型的索引</li>
+</ul>
+<h2 id="4-2-方法"><a href="#4-2-方法" class="headerlink" title="4.2 方法"></a>4.2 方法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">u2 methods_count;           &#x2F;&#x2F; 方法数量</span><br><span class="line"></span><br><span class="line">method_info &#123;</span><br><span class="line">    u2 access_flags;                &#x2F;&#x2F; 访问标志</span><br><span class="line">    u2 name_index;                  &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 descriptor_index;            &#x2F;&#x2F; 指向常量池的入口</span><br><span class="line">    u2 attributes_count;            &#x2F;&#x2F; 该字段的属性数量</span><br><span class="line">    attribute_info attributes[attributes_count];    &#x2F;&#x2F; 属性信息</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/11946975.jpg"></p>
+<p>以第一个方法为例:</p>
+<ul>
+<li><code>Name Index</code> 表示方法名称为 <code>&lt;init&gt;</code>, 即构造方法</li>
+<li><code>Desc Index</code> 表示方法签名为 <code>(Ljava/lang/String;I)V</code>, 即 <code>(String, int):void</code></li>
+</ul>
+<h2 id="4-3-属性"><a href="#4-3-属性" class="headerlink" title="4.3 属性"></a>4.3 属性</h2><h3 id="4-3-1-Code-属性"><a href="#4-3-1-Code-属性" class="headerlink" title="4.3.1 Code 属性"></a>4.3.1 Code 属性</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Code_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;            <span class="comment">// 指向常量池, 应该是 UTF8Info, 且值为 &quot;Code&quot;</span></span><br><span class="line">    u4 attribute_length;                <span class="comment">// 属性长度, 不包括开始的 6 个字节</span></span><br><span class="line">    u2 max_stack;                       <span class="comment">// 操作数栈的最大深度</span></span><br><span class="line">    u2 max_locals;                      <span class="comment">// 最大局部变量表个数</span></span><br><span class="line">    u4 code_length;                     <span class="comment">// 该方法的代码长度</span></span><br><span class="line">    u1 code[code_length];               <span class="comment">// 真正的字节码</span></span><br><span class="line">    u2 exception_table_length;          <span class="comment">// 捕获异常表的长度</span></span><br><span class="line">    &#123;</span><br><span class="line">        u2 start_pc;        <span class="comment">// 捕获起始地址</span></span><br><span class="line">        u2 end_pc;          <span class="comment">// 捕获结束地址</span></span><br><span class="line">        u2 handler_pc;      <span class="comment">// </span></span><br><span class="line">        u2 catch_type;      <span class="comment">// 异常类型</span></span><br><span class="line">    &#125; exception_table[exception_table_length];  <span class="comment">// 捕获异常表</span></span><br><span class="line">    u2 attributes_count;                <span class="comment">// 嵌套属性数量</span></span><br><span class="line">    attribute_info attributes[attributes_count];    <span class="comment">// 嵌套属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>code 属性一般由两个常见的子属性, 分别是:</p>
+<ul>
+<li>LineNumberTable</li>
+<li>LocalVariableTable</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-24/56894058.jpg"></p>
+<h3 id="4-3-2-LocalLineTable"><a href="#4-3-2-LocalLineTable" class="headerlink" title="4.3.2 LocalLineTable"></a>4.3.2 LocalLineTable</h3><pre><code>通过该属性可以完成字节码与 Java 源码的行号映射
+可以在 debug 的时候准确找到源码
+并且抛出异常的时候堆栈信息可以找到对应行号
+</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">LineNumberTable_arrtibute &#123;</span><br><span class="line">    u2 attribute_name_index;        <span class="comment">// 指向常量池, 必须是值为 &quot;LineNumberTable&quot; 的 Utf8 常量</span></span><br><span class="line">    u4 arrtibute_length;            <span class="comment">// 当前属性长度, 不包括开始的 6 个字节</span></span><br><span class="line">    u2 line_number_table_length;    <span class="comment">// line_number_table 数组元素个数</span></span><br><span class="line">    </span><br><span class="line">    &#123;</span><br><span class="line">        u2 start_pc;                <span class="comment">// start_pc 值必须是 code[] 数组的一个索引</span></span><br><span class="line">        u2 line_number;             <span class="comment">// 源文件的行号</span></span><br><span class="line">    &#125; line_number_table[line_number_table_length];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-3-LocalVariableTable"><a href="#4-3-3-LocalVariableTable" class="headerlink" title="4.3.3 LocalVariableTable"></a>4.3.3 LocalVariableTable</h3><pre><code>LocalVariableTable 属性建立了方法中的局部变量与源代码中的局部变量之间的对应关系。 
+</code></pre>
+<p>每个 LocalVariableTable  的 local_variable_table 部分可以看做是一个数组， 每个数组项是一个叫做local_variable_info的结构， 该结构描述了某个局部变量的变量名和描述符， 还有和源代码的对应关系。</p>
+<p>下面讲解 <code>local_variable_info</code> 的各个部分：   </p>
+<ul>
+<li><code>start_pc</code> 是当前 local_variable_info 所对应的局部变量的作用域的起始字节码偏移量； </li>
+<li><code>length</code> 是当前 <code>local_variable_info</code> 所对应的局部变量的作用域的大小。 也就是从字节码偏移量 <code>start_pc</code>  到 <code>start_pc+length</code> 就是当前局部变量的作用域范围； </li>
+<li><code>name_index</code> 指向常量池中的一个 <code>CONSTANT_Utf8_info</code> ， 该 <code>CONSTANT_Utf8_info</code> 描述了当前局部变量的变量名； </li>
+<li><code>descriptor_index</code> 指向常量池中的一个 <code>CONSTANT_Utf8_info</code> ， 该 <code>CONSTANT_Utf8_info</code> 描述了当前局部变量的描述符； </li>
+<li><code>index</code> 描述了在该方法被执行时，当前局部变量在栈中局部变量表中的位置。 </li>
+</ul>
+<p>由此可知， 方法中的每个局部变量都会对应一个local_variable_info 。 </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">LocalVariableTable_attribute &#123;</span><br><span class="line">    u2 attribute_name_index;        <span class="comment">// 指向常量池, 必须是值为 &quot;LocalVariableTable_attribute&quot; 的 Utf8 常量</span></span><br><span class="line">    u4 attribute_length;            <span class="comment">// 当前属性长度, 不包括开始的 6 个字节</span></span><br><span class="line">    u2 local_variable_table_length; <span class="comment">// local_variable_table[] 的元素个数</span></span><br><span class="line">    </span><br><span class="line">    &#123;</span><br><span class="line">        u2 start_pc;                <span class="comment">// 局部变量的索引都在范围 [start_pc, start_pc + length)</span></span><br><span class="line">        u2 length;</span><br><span class="line">        u2 name_index;              <span class="comment">// 变量名索引, 在常量池中</span></span><br><span class="line">        u2 descriptor_index;        <span class="comment">// 变量描述索引(在常量池中)</span></span><br><span class="line">        u2 index;                   <span class="comment">// 此局部变量在当前栈帧的局部变量表中的索引</span></span><br><span class="line">    &#125; local_variable_table[local_variable_table_length]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-25/6624730.jpg"></p>
+<p>解析以上字节码得到:</p>
+<table>
+<thead>
+<tr>
+<th align="center">start pc</th>
+<th align="center">length</th>
+<th align="center">slot</th>
+<th align="center">name</th>
+<th align="center">descript</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center">15</td>
+<td align="center">0</td>
+<td align="center">this</td>
+<td align="center">Lorg/destiny/jvm/model/Employee</td>
+</tr>
+<tr>
+<td align="center">0</td>
+<td align="center">15</td>
+<td align="center">1</td>
+<td align="center">name</td>
+<td align="center">Ljava/lang/String</td>
+</tr>
+<tr>
+<td align="center">0</td>
+<td align="center">15</td>
+<td align="center">2</td>
+<td align="center">age</td>
+<td align="center">I</td>
+</tr>
+</tbody></table>
+<p>在解析 <code>code</code> 属性时需要注意的两点:</p>
+<ul>
+<li><code>code</code> 属性中包含了方法真正的字节码</li>
+<li><code>code</code> 属性中包含几个子属性, 包括 <code>LineNumberTable</code>, <code>LocalVariableTable</code>等, 也需要进行解析.</li>
+</ul>
+<p>在 <code>Field</code>, <code>Method</code>, <code>Attribute</code> 三者中, 我们可以抽象出如下的关系:</p>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-25/90459462.jpg"></p>
+<h3 id="4-3-4-Exceptions"><a href="#4-3-4-Exceptions" class="headerlink" title="4.3.4 Exceptions"></a>4.3.4 Exceptions</h3><pre><code>如果代码中出现了try&#123;&#125;catch&#123;&#125;块,那么try&#123;&#125;块内的机器指令的地址范围记录下来, 并且记录对应的catch&#123;&#125;块中的起始机器指令地址.
+当运行时在try块中有异常抛出的话, JVM会将catch&#123;&#125;块对应懂得其实机器指令地址传递给PC寄存器，从而实现指令跳转.
+</code></pre>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">u2 exception_table_length;          <span class="comment">// 捕获异常表的长度</span></span><br><span class="line">&#123;</span><br><span class="line">    u2 start_pc;        <span class="comment">// 捕获起始地址</span></span><br><span class="line">    u2 end_pc;          <span class="comment">// 捕获结束地址</span></span><br><span class="line">    u2 handler_pc;      <span class="comment">// </span></span><br><span class="line">    u2 catch_type;      <span class="comment">// 异常类型</span></span><br><span class="line">&#125; exception_table[exception_table_length];  <span class="comment">// 捕获异常表</span></span><br></pre></td></tr></table></figure>
+
+<p><code>exception_table</code> 记录了该 code 属性中所有显示抛出的异常信心, 包括异常的作用于及类型.</p>
+<h1 id="5-字节码指令"><a href="#5-字节码指令" class="headerlink" title="5. 字节码指令"></a>5. 字节码指令</h1><h2 id="5-1-main-方法字节码"><a href="#5-1-main-方法字节码" class="headerlink" title="5.1 main 方法字节码"></a>5.1 main 方法字节码</h2><p>Employee 的 main 方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Employee employee = <span class="keyword">new</span> Employee(<span class="string">&quot;destiny&quot;</span>, <span class="number">24</span>);</span><br><span class="line">    employee.sayHello();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>经过编译后的字节码:<br><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/52634127.jpg"></p>
+<h3 id="5-1-1-new"><a href="#5-1-1-new" class="headerlink" title="5.1.1 new"></a>5.1.1 new</h3><pre><code>new indexbyte1 indexbyte2
+</code></pre>
+<ul>
+<li>操作: 创建一个对象</li>
+<li>(indexbyte1 &lt;&lt; 8) | indexbyte2 得到一个指向常量池的索引</li>
+<li>BB 00 01 对应 <code>new #1</code>, 对应的类就是 <code>org/destiny/jvm/model/Employee</code></li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/55866163.jpg"></p>
+<ol>
+<li>在堆中创建一个新对象</li>
+<li>将该对象的引用压入栈中</li>
+</ol>
+<h3 id="5-1-2-dup"><a href="#5-1-2-dup" class="headerlink" title="5.1.2 dup"></a>5.1.2 dup</h3><ul>
+<li>操作: 复制操作数栈栈顶的值, 并压入栈中</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/56559512.jpg"></p>
+<h3 id="5-1-3-ldc"><a href="#5-1-3-ldc" class="headerlink" title="5.1.3 ldc"></a>5.1.3 ldc</h3><pre><code>ldc index
+</code></pre>
+<ul>
+<li>操作: 从运行时常量池中提取数据压入栈中</li>
+<li><code>ldc #43</code>, 43 在常量池中的值为字符串 <code>destiny</code></li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/3305320.jpg"></p>
+<h3 id="5-1-4-bipush"><a href="#5-1-4-bipush" class="headerlink" title="5.1.4 bipush"></a>5.1.4 bipush</h3><pre><code>bipush byte
+</code></pre>
+<ul>
+<li>将有符号 byte 扩展为一个 int 类型的值 value, 然后将 value 压入到操作数栈中.</li>
+<li>byte 是一个立即数而非常量池引用</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/78725468.jpg"></p>
+<h3 id="5-1-5-invokespecial-indexbyte1-indexbyte2"><a href="#5-1-5-invokespecial-indexbyte1-indexbyte2" class="headerlink" title="5.1.5 invokespecial indexbyte1 indexbyte2"></a>5.1.5 invokespecial indexbyte1 indexbyte2</h3><ul>
+<li>操作: 对一个对象进行初始化, 父类的初始化, 调用私有方法(因为没有多态性为)</li>
+<li>(indexbyte1 &lt;&lt; 8) | indexbyte2 得到一个指向常量池的索引</li>
+<li><code>invokespecial #45</code></li>
+<li>常量池 #45 是一个 <code>methodref</code>: <code>&lt;init&gt;:(Ljava/lang/String;I)V</code></li>
+<li>需要形成新的栈帧</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/44315742.jpg"></p>
+<h3 id="5-1-6-astore-n"><a href="#5-1-6-astore-n" class="headerlink" title="5.1.6 astore_n"></a>5.1.6 astore_n</h3><ul>
+<li>操作: 将栈顶的 <code>reference</code> 类型数据保存到局部变量表中</li>
+<li>astore_0</li>
+<li>astore_1</li>
+<li>astore_2</li>
+<li>astore_3</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/31300372.jpg"></p>
+<h3 id="5-1-7-aload-n"><a href="#5-1-7-aload-n" class="headerlink" title="5.1.7 aload_n"></a>5.1.7 aload_n</h3><ul>
+<li>操作: 从局部变量表中加载一个 reference 类型的值到操作数栈中</li>
+<li>aload_0</li>
+<li>aload_1</li>
+<li>aload_2</li>
+<li>aload_3</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/9829577.jpg"></p>
+<h3 id="5-1-8-invokevirtual-indexbyte1-indexbyte2"><a href="#5-1-8-invokevirtual-indexbyte1-indexbyte2" class="headerlink" title="5.1.8 invokevirtual indexbyte1 indexbyte2"></a>5.1.8 invokevirtual indexbyte1 indexbyte2</h3><ul>
+<li>操作: 调用实例方法, 依据实例的具体类型进行分派(多态)</li>
+<li>(indexbyte1 &lt;&lt; 8) | indexbyte2</li>
+<li><code>invokevirtual #47</code> =&gt; <code>sayHello: ()V</code></li>
+<li>也需要形成新的栈帧</li>
+</ul>
+<h3 id="5-1-9-return"><a href="#5-1-9-return" class="headerlink" title="5.1.9 return"></a>5.1.9 return</h3><ul>
+<li>操作: 方法返回, 从当前函数栈帧退出, 无返回值.</li>
+</ul>
+<h2 id="5-2-方法指令"><a href="#5-2-方法指令" class="headerlink" title="5.2  方法指令"></a>5.2 <init> 方法指令</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Employee</span><span class="params">(String name, <span class="keyword">int</span> age)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.name = name;</span><br><span class="line">    <span class="keyword">this</span>.age = age;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/3230642.jpg"></p>
+<h3 id="5-2-1-aload-0"><a href="#5-2-1-aload-0" class="headerlink" title="5.2.1 aload_0"></a>5.2.1 aload_0</h3><ul>
+<li>操作: 从局部变量表中加载 index 为 0 的 reference 类型的值到操作数栈中</li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/18433274.jpg"></p>
+<h3 id="5-2-2-aload-1"><a href="#5-2-2-aload-1" class="headerlink" title="5.2.2 aload_1"></a>5.2.2 aload_1</h3><p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/25073553.jpg"></p>
+<h3 id="5-2-3-putfield-indexbyte1-indexbyte2"><a href="#5-2-3-putfield-indexbyte1-indexbyte2" class="headerlink" title="5.2.3 putfield indexbyte1 indexbyte2"></a>5.2.3 putfield indexbyte1 indexbyte2</h3><ul>
+<li>操作: 给一个对象字段赋值</li>
+<li>(indexbyte1 &lt;&lt; 8) | indexbyte2</li>
+<li><code>putfield #15</code> =&gt; <code>putfield name:Ljava/lang/String</code></li>
+</ul>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/36898043.jpg"></p>
+<h3 id="5-3-3-iload-2"><a href="#5-3-3-iload-2" class="headerlink" title="5.3.3 iload_2"></a>5.3.3 iload_2</h3><ul>
+<li>操作: 从局部变量中把 index 为 2 的 int 类型的值加载到操作数栈中</li>
+<li>reference 类型使用 <code>aload</code>, int 类型使用 <code>iload</code></li>
+</ul>
+<h2 id="5-4-字节码指令的设计实现"><a href="#5-4-字节码指令的设计实现" class="headerlink" title="5.4 字节码指令的设计实现"></a>5.4 字节码指令的设计实现</h2><p>使用 <code>命令模式</code> 来抽象该场景, 即将所有字节码指令抽象为命令对象, 基类声明 <code>command</code> 方法, 再根据操作数的不同泛化出不同的抽象子类</p>
+<p><img src="http://oetw0yrii.bkt.clouddn.com/18-6-26/32409326.jpg"></p>
+<h1 id="6-JVM-执行引擎"><a href="#6-JVM-执行引擎" class="headerlink" title="6 JVM 执行引擎"></a>6 JVM 执行引擎</h1><p><img src="http://oetw0yrii.bkt.clouddn.com/18-7-1/2187429.jpg"></p>
+<h2 id="6-1-Java-命令"><a href="#6-1-Java-命令" class="headerlink" title="6.1 Java 命令"></a>6.1 Java 命令</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -cp path1;path2 org.destiny.jvm.Employee</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>cp: classpath(s), 默认是当前路径</li>
+<li>class name: 系统需要找到这个类的 main 方法, 然后执行它的字节码</li>
+</ul>
+<h2 id="6-2-执行过程"><a href="#6-2-执行过程" class="headerlink" title="6.2 执行过程"></a>6.2 执行过程</h2><ul>
+<li>加载类<ul>
+<li>工具: <code>ClassFileLoader</code></li>
+<li>目的地: 方法区</li>
+</ul>
+</li>
+<li>获取类的 <code>public static void main(String[] args)</code> 方法<ul>
+<li>从方法区寻找</li>
+</ul>
+</li>
+<li>执行 <code>main</code> 方法的字节码<ul>
+<li>字节码指令</li>
+<li>栈帧(StackFrame)</li>
+<li>堆(Heap)</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-3-字节码指令的分类"><a href="#6-3-字节码指令的分类" class="headerlink" title="6.3 字节码指令的分类"></a>6.3 字节码指令的分类</h2><table>
+<thead>
+<tr>
+<th align="center">类型</th>
+<th align="center">指令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">依次执行</td>
+<td align="center"><code>new</code><br/><code>bipush</code><br/><code>ldc</code><br/><code>dup</code></td>
+</tr>
+<tr>
+<td align="center">暂停当前栈帧并创建新栈帧</td>
+<td align="center"><code>invokespecial</code><br/><code>invokevirtual</code></td>
+</tr>
+<tr>
+<td align="center">跳转到另一行去执行</td>
+<td align="center"><code>if_icmp_ge</code><br/><code>if_icmple</code><br/><code>goto</code></td>
+</tr>
+<tr>
+<td align="center">退出当前栈帧</td>
+<td align="center"><code>return</code></td>
+</tr>
+</tbody></table>
+<h1 id="7-垃圾回收机制"><a href="#7-垃圾回收机制" class="headerlink" title="7. 垃圾回收机制"></a>7. 垃圾回收机制</h1><h2 id="7-1-Java-对象的内存布局"><a href="#7-1-Java-对象的内存布局" class="headerlink" title="7.1 Java 对象的内存布局"></a>7.1 Java 对象的内存布局</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-7-1/13981658.jpg"></p>
+<ul>
+<li>MarkWord: 标注对象的元信息<ul>
+<li>GC 年龄</li>
+<li>锁的标志位</li>
+</ul>
+</li>
+<li>ClassPointer: 指向方法区的类信息的指针</li>
+<li>InstanceData: 类实例对象的数据<ul>
+<li>方法信息保存在方法区</li>
+</ul>
+</li>
+<li>padding: 填充</li>
+</ul>
+<h2 id="7-2-对象分配和垃圾回收"><a href="#7-2-对象分配和垃圾回收" class="headerlink" title="7.2 对象分配和垃圾回收"></a>7.2 对象分配和垃圾回收</h2><ul>
+<li>对象优先分配在新生代<ul>
+<li>如果 Eden 区没有足够的空间, 则触发一次 MinorGC</li>
+<li>Java 对象大多具有生命周期短暂的特点, MinorGC 非常频繁, 速度也很快</li>
+</ul>
+</li>
+<li>大对象直接进入老年代<ul>
+<li>可以根据参数设置阈值</li>
+</ul>
+</li>
+<li>长期存活对象进入老年代<ul>
+<li>每个对象都有一个年龄(age), 在 MarkWord 中</li>
+<li>如果 age 超过阈值, 则晋升到老年代</li>
+</ul>
+</li>
+<li>动态年龄判断<ul>
+<li>如果在 Survivor 空间中相同年龄的所有对象大小的总数和大于 Survivor 空间的一半, 年龄大于或等于该年龄的对象可以直接进入老年代</li>
+</ul>
+</li>
+</ul>
+<h2 id="MinorGC-时-新生代与老年代的关系"><a href="#MinorGC-时-新生代与老年代的关系" class="headerlink" title="MinorGC 时 新生代与老年代的关系"></a>MinorGC 时 新生代与老年代的关系</h2><p><img src="http://oetw0yrii.bkt.clouddn.com/18-7-1/2587031.jpg"></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/JVM/" rel="tag"># JVM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/04/01/%E4%BB%8E%E5%A4%B4%E6%90%AD%E5%BB%BAgithub%E5%8D%9A%E5%AE%A2/" rel="next" title="从头搭建github博客">
+                <i class="fa fa-chevron-left"></i> 从头搭建github博客
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/11/26/Activiti%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%BC%95%E6%93%8E/" rel="prev" title="Activiti工作流引擎">
+                Activiti工作流引擎 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/blog/archives">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/blog/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="nav-text">1. 概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-Class-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-text">1.1 Class 文件格式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-1-%E9%AD%94%E6%95%B0-amp-%E7%89%88%E6%9C%AC-amp-%E5%B8%B8%E9%87%8F%E6%B1%A0%E4%B8%AA%E6%95%B0"><span class="nav-text">1.1.1 魔数 &amp; 版本 &amp; 常量池个数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-2-%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="nav-text">1.1.2 常量池</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-2-1-%E5%B8%B8%E9%87%8F%E6%B1%A0%E5%AE%9E%E4%BE%8B"><span class="nav-text">1.1.2.1 常量池实例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-3-%E8%AE%BF%E9%97%AE%E6%A0%87%E5%BF%97"><span class="nav-text">1.1.3 访问标志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-4-%E7%B1%BB%E7%B4%A2%E5%BC%95-%E7%88%B6%E7%B1%BB%E7%B4%A2%E5%BC%95"><span class="nav-text">1.1.4 类索引, 父类索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-5-%E6%8E%A5%E5%8F%A3"><span class="nav-text">1.1.5 接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-6-%E5%AD%97%E6%AE%B5"><span class="nav-text">1.1.6 字段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-7-%E6%96%B9%E6%B3%95"><span class="nav-text">1.1.7 方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-8-%E5%B1%9E%E6%80%A7"><span class="nav-text">1.1.8 属性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-8-1-Constant-Value"><span class="nav-text">1.1.8.1 Constant Value</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-8-2-Code"><span class="nav-text">1.1.8.2 Code</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-8-3-LineNumber"><span class="nav-text">1.1.8.3 LineNumber</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-8-4-LocalVariableTable-%E5%B1%9E%E6%80%A7"><span class="nav-text">1.1.8.4 LocalVariableTable 属性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-JVM-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%8A%A8%E6%80%81%E8%A1%8C%E4%B8%BA"><span class="nav-text">1.2 JVM 运行时动态行为</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-%E5%AE%9E%E4%BE%8B"><span class="nav-text">1.2.1 实例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-ClassLoader"><span class="nav-text">2. ClassLoader</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-Java-%E6%98%AF%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5"><span class="nav-text">2.1 Java 是动态链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%A7%94%E6%89%98%E6%A8%A1%E5%9E%8B"><span class="nav-text">2.2 类加载器的委托模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="nav-text">2.3 类加载器的命名空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-%E9%AA%8C%E8%AF%81"><span class="nav-text">2.4 验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="nav-text">2.5 自定义类加载器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="nav-text">3. 常量池</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E5%B8%B8%E8%A7%81%E7%BB%93%E6%9E%84"><span class="nav-text">3.1 常见结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E8%AE%BF%E9%97%AE%E6%A0%87%E5%BF%97"><span class="nav-text">3.2 访问标志</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%AD%97%E6%AE%B5-amp-%E6%96%B9%E6%B3%95"><span class="nav-text">4. 字段 &amp; 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E5%AD%97%E6%AE%B5"><span class="nav-text">4.1 字段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E6%96%B9%E6%B3%95"><span class="nav-text">4.2 方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-%E5%B1%9E%E6%80%A7"><span class="nav-text">4.3 属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-1-Code-%E5%B1%9E%E6%80%A7"><span class="nav-text">4.3.1 Code 属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-2-LocalLineTable"><span class="nav-text">4.3.2 LocalLineTable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-3-LocalVariableTable"><span class="nav-text">4.3.3 LocalVariableTable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-4-Exceptions"><span class="nav-text">4.3.4 Exceptions</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4"><span class="nav-text">5. 字节码指令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-main-%E6%96%B9%E6%B3%95%E5%AD%97%E8%8A%82%E7%A0%81"><span class="nav-text">5.1 main 方法字节码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-1-new"><span class="nav-text">5.1.1 new</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-2-dup"><span class="nav-text">5.1.2 dup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-3-ldc"><span class="nav-text">5.1.3 ldc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-4-bipush"><span class="nav-text">5.1.4 bipush</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-5-invokespecial-indexbyte1-indexbyte2"><span class="nav-text">5.1.5 invokespecial indexbyte1 indexbyte2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-6-astore-n"><span class="nav-text">5.1.6 astore_n</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-7-aload-n"><span class="nav-text">5.1.7 aload_n</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-8-invokevirtual-indexbyte1-indexbyte2"><span class="nav-text">5.1.8 invokevirtual indexbyte1 indexbyte2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-9-return"><span class="nav-text">5.1.9 return</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-%E6%96%B9%E6%B3%95%E6%8C%87%E4%BB%A4"><span class="nav-text">5.2  方法指令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-1-aload-0"><span class="nav-text">5.2.1 aload_0</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-2-aload-1"><span class="nav-text">5.2.2 aload_1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-3-putfield-indexbyte1-indexbyte2"><span class="nav-text">5.2.3 putfield indexbyte1 indexbyte2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-3-iload-2"><span class="nav-text">5.3.3 iload_2</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4-%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%AE%9E%E7%8E%B0"><span class="nav-text">5.4 字节码指令的设计实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-JVM-%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="nav-text">6 JVM 执行引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-Java-%E5%91%BD%E4%BB%A4"><span class="nav-text">6.1 Java 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2-%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="nav-text">6.2 执行过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4%E7%9A%84%E5%88%86%E7%B1%BB"><span class="nav-text">6.3 字节码指令的分类</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6"><span class="nav-text">7. 垃圾回收机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-Java-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-text">7.1 Java 对象的内存布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-2-%E5%AF%B9%E8%B1%A1%E5%88%86%E9%85%8D%E5%92%8C%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6"><span class="nav-text">7.2 对象分配和垃圾回收</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MinorGC-%E6%97%B6-%E6%96%B0%E7%94%9F%E4%BB%A3%E4%B8%8E%E8%80%81%E5%B9%B4%E4%BB%A3%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-text">MinorGC 时 新生代与老年代的关系</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate"> 
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">destiny</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i>
+  <span id="busuanzi_container_site_uv">本站访客数:<span id="busuanzi_value_site_uv"></span></span>
+  
+  <!-- 由 <a class="theme-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 强力驱动 -->
+  </div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Code Alone </div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=6.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=6.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=6.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=6.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=6.1.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/love.js"></script>>

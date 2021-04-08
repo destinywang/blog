@@ -99,13 +99,22 @@
 
 
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="https://destinywang.github.io/blog/archives/index.html">
+  <meta name="description" content="1. 概述假设有如下流程:  我们在流程进行的时候, 需要在申请和经理审批之间临时新增一个节点, 达到如下的效果:  该行为我们称之为加签. 加签的两种思路  直接修改模板, 在模板中添加节点以及连线, 并修改实例的走向; 直接修改流程定义对应的缓存数据, 不修改模板, 新增的节点与当前需要加签的实例挂钩.  2. 实现方式2.1. 修改模板步骤:  找到当前实例对象对应的模板数据; 在模板数据的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activiti(6)--加签功能的实现">
+<meta property="og:url" content="https://destinywang.github.io/blog/2018/12/22/Activiti-6-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="1. 概述假设有如下流程:  我们在流程进行的时候, 需要在申请和经理审批之间临时新增一个节点, 达到如下的效果:  该行为我们称之为加签. 加签的两种思路  直接修改模板, 在模板中添加节点以及连线, 并修改实例的走向; 直接修改流程定义对应的缓存数据, 不修改模板, 新增的节点与当前需要加签的实例挂钩.  2. 实现方式2.1. 修改模板步骤:  找到当前实例对象对应的模板数据; 在模板数据的">
 <meta property="og:locale">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/50369657-2bf20e00-05d4-11e9-9af3-9416a020adae.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/50369682-6a87c880-05d4-11e9-8b4e-232ab3e708c5.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/50369997-a5402f80-05d9-11e9-9ef3-a8549723f74b.png">
+<meta property="article:published_time" content="2018-12-22T02:18:37.000Z">
+<meta property="article:modified_time" content="2018-12-22T13:01:27.000Z">
 <meta property="article:author" content="destiny">
+<meta property="article:tag" content="Activiti">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/17758731/50369657-2bf20e00-05d4-11e9-9af3-9416a020adae.png">
 
 
 
@@ -114,7 +123,7 @@
 
 
 
-  <link rel="canonical" href="https://destinywang.github.io/blog/archives/"/>
+  <link rel="canonical" href="https://destinywang.github.io/blog/2018/12/22/Activiti-6-加签功能的实现/"/>
 
 
 
@@ -124,7 +133,7 @@
   };
 </script>
 
-  <title>归档 | Hexo</title>
+  <title>Activiti(6)--加签功能的实现 | Hexo</title>
   
 
 
@@ -171,7 +180,7 @@
     
   
 
-  <div class="container sidebar-position-left page-archive">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
     <a target="_blank" rel="noopener" href="https://github.com/destinywang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 
@@ -339,468 +348,244 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
+  <div id="posts" class="posts-expand">
+    
+
+  
+
   
   
   
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
 
-      
-      <span class="archive-page-counter">
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://destinywang.github.io/blog/blog/2018/12/22/Activiti-6-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
         
         
+          <h1 class="post-title" itemprop="name headline">Activiti(6)--加签功能的实现</h1>
         
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-22T10:18:37+08:00">2018-12-22</time>
+            
+
+            
+            
+
+            
+          </span>
+
           
-        
-        共计 14 篇文章。 
-        我会做的更好。
-      </span>
-      
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/" itemprop="url" rel="index"><span itemprop="name">Activiti</span></a></span>
 
-      
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/%E5%B7%A5%E4%BD%9C%E6%B5%81/" itemprop="url" rel="index"><span itemprop="name">工作流</span></a></span>
 
-        
-        
-        
-
-        
+                
+                
+              
+            </span>
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2021">2021</h1>
-          </div>
-        
-        
 
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2021/04/07/ElasticStack/" itemprop="url">
-              
-                <span itemprop="name">ElasticStack</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2021-04-07T23:35:48+08:00"
-              content="2021-04-07" >
-          04-07
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2020">2020</h1>
-          </div>
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2020/12/20/Docker-%E5%AE%9E%E7%8E%B0-DevOps/" itemprop="url">
-              
-                <span itemprop="name">Docker 实现 DevOps</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-12-20T11:38:49+08:00"
-              content="2020-12-20" >
-          12-20
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2020/08/01/Go-kit%E8%A7%A3%E6%9E%90/" itemprop="url">
-              
-                <span itemprop="name">Go-kit解析</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-08-01T15:05:21+08:00"
-              content="2020-08-01" >
-          08-01
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
+            
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2019">2019</h1>
-          </div>
-        
-        
 
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2019/08/13/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3-MySQL-%E5%8E%9F%E7%90%86/" itemprop="url">
-              
-                <span itemprop="name">深入理解 MySQL 原理</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2019-08-13T22:20:12+08:00"
-              content="2019-08-13" >
-          08-13
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2019/01/19/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E7%93%B6%E9%A2%88%E4%B8%8E%E4%BC%98%E5%8C%96/" itemprop="url">
-              
-                <span itemprop="name">关系型数据库的瓶颈与优化</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2019-01-19T21:42:46+08:00"
-              content="2019-01-19" >
-          01-19
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2018">2018</h1>
-          </div>
-        
-        
+          
 
-        
+          
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+          
 
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/12/23/Activiti-7-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" itemprop="url">
-              
-                <span itemprop="name">Activiti(7)--加签功能的实现</span>
-              
-            </a>
-        
-      </h2>
+          
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-12-23T02:08:46+08:00"
-              content="2018-12-23" >
-          12-23
-        </time>
-      </div>
+        </div>
+      </header>
+    
 
-    </header>
-  </article>
-
-
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/12/22/Activiti-5-%E4%BB%BB%E6%84%8F%E8%8A%82%E7%82%B9%E8%B7%B3%E8%BD%AC/" itemprop="url">
-              
-                <span itemprop="name">Activiti(5)--任意节点跳转</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-12-22T21:00:18+08:00"
-              content="2018-12-22" >
-          12-22
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
 
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/12/22/Activiti-6-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" itemprop="url">
-              
-                <span itemprop="name">Activiti(6)--加签功能的实现</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-12-22T10:18:37+08:00"
-              content="2018-12-22" >
-          12-22
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/12/16/Activiti-4-%E5%A4%9A%E5%AE%9E%E4%BE%8B%E5%AE%9E%E7%8E%B0%E4%BC%9A%E7%AD%BE%E5%8A%9F%E8%83%BD/" itemprop="url">
-              
-                <span itemprop="name">Activiti(4)--多实例实现会签功能</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-12-16T11:19:58+08:00"
-              content="2018-12-16" >
-          12-16
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
+        <h1 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h1><p>假设有如下流程:</p>
+<p><img src="https://user-images.githubusercontent.com/17758731/50369657-2bf20e00-05d4-11e9-9af3-9416a020adae.png" alt="image"></p>
+<p>我们在流程进行的时候, 需要在申请和经理审批之间临时新增一个节点, 达到如下的效果:</p>
+<p><img src="https://user-images.githubusercontent.com/17758731/50369682-6a87c880-05d4-11e9-8b4e-232ab3e708c5.png" alt="image"></p>
+<p>该行为我们称之为加签.</p>
+<p>加签的两种思路</p>
+<ol>
+<li>直接修改模板, 在模板中添加节点以及连线, 并修改实例的走向;</li>
+<li>直接修改流程定义对应的缓存数据, 不修改模板, 新增的节点与当前需要加签的实例挂钩.</li>
+</ol>
+<h1 id="2-实现方式"><a href="#2-实现方式" class="headerlink" title="2. 实现方式"></a>2. 实现方式</h1><h2 id="2-1-修改模板"><a href="#2-1-修改模板" class="headerlink" title="2.1. 修改模板"></a>2.1. 修改模板</h2><p>步骤:</p>
+<ol>
+<li>找到当前实例对象对应的模板数据;</li>
+<li>在模板数据的基础上添加新节点, 修改连线, 并更新数据库中的模板;</li>
+<li>更新模板对应的流程定义缓存, 否则加签节点不会生效;</li>
+<li>完成新增的节点任务后, 再把新增的节点以及连线删除, 即还原流程模板.</li>
+</ol>
+<ul>
+<li>模板是共享的, 所以把模板修改了, 所有运行实例对应的模板也会被修改;</li>
+<li>修改模板容易导致当前实例影响到其他实例, 这种方法并不可取;</li>
+</ul>
+<h2 id="2-2-修改流程定义缓存"><a href="#2-2-修改流程定义缓存" class="headerlink" title="2.2 修改流程定义缓存"></a>2.2 修改流程定义缓存</h2><p>因为模板是共享的, 不修改模板就不会影响其他实例;</p>
+<p>也不需要修改原有流程的流向, 要让流程按照新的流向运行.</p>
+<blockquote>
+<p>因为流程在运转过程中, 需要实时获取该实例对应的模板数据才能知道应该如何流转</p>
+</blockquote>
+<ol>
+<li>首先从流程定义缓存中获取模板数据;</li>
+<li>如果流程缓存定义丢失, 则需要重新执行模板的解析工作并将其防止到流程缓存中;</li>
+</ol>
+<p>因此修改流程定义缓存就可以实现功能.</p>
+<p>但仍有一个问题需要解决: 如果流程定义缓存丢失, 引擎默认解析的是数据库中存在的模板数据, 而新增的临时节点不会存在与 XML 中.</p>
+<h3 id="2-2-1-步骤"><a href="#2-2-1-步骤" class="headerlink" title="2.2.1 步骤"></a>2.2.1 步骤</h3><p><img src="https://user-images.githubusercontent.com/17758731/50369997-a5402f80-05d9-11e9-9ef3-a8549723f74b.png" alt="image"></p>
+<ol>
+<li>在流程缓存中添加一个任务节点并为任务节点添加出线信息, 出线信息是需要到达的目标节点;</li>
+<li>添加的目标节点并没有入线, 也就是说不会影响到其他的实例, 正常的流程实例启动的时候不会走到这个节点;</li>
+<li>加签完成后可以触发执行实例走到新增的任务节点, 这样当前实例就按照最新的路线进行运转;</li>
+<li>如果当前的节点加签后不想让实例运转到最新的节点, 可以复制一个当前节点, 继续让实例运转;</li>
+<li>加签的最终目的是让实例按照最新的路线走, 与模板中规划的路线脱离关系.</li>
+</ol>
+<p>需要解决的问题:</p>
+<ol>
+<li>新增的节点以及连线如何存储;</li>
+<li>流程定义缓存如何修改;</li>
+<li>加签的节点以及连线信息如何持久化;</li>
+<li>缓存丢失, 新的路线图丢失;</li>
+<li>流程实例结束, 当前加签的节点以及连线已经不需要应该如何删除;</li>
+</ol>
+<p>修改流程定义缓存后, 由于缓存失效, 依然会报错</p>
+<p>此时就需要先添加缓存, 然后完成任务</p>
+<h1 id="3-加签原理代码讲解"><a href="#3-加签原理代码讲解" class="headerlink" title="3. 加签原理代码讲解"></a>3. 加签原理代码讲解</h1><h1 id="4-加签节点存储表设计"><a href="#4-加签节点存储表设计" class="headerlink" title="4. 加签节点存储表设计"></a>4. 加签节点存储表设计</h1><blockquote>
+<p>Activiti 继承了 MyBatis 框架, 因此可以让我们注入配置文件或者注解类使用 MyBatis.</p>
+</blockquote>
+<h2 id="4-1-表结构"><a href="#4-1-表结构" class="headerlink" title="4.1. 表结构"></a>4.1. 表结构</h2><h2 id="4-2-实体类"><a href="#4-2-实体类" class="headerlink" title="4.2. 实体类"></a>4.2. 实体类</h2><h2 id="4-3-Mapper-类"><a href="#4-3-Mapper-类" class="headerlink" title="4.3. Mapper 类"></a>4.3. Mapper 类</h2><h2 id="4-4-注入流程引擎"><a href="#4-4-注入流程引擎" class="headerlink" title="4.4. 注入流程引擎"></a>4.4. 注入流程引擎</h2>
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/blog/2018/12/11/Activiti-3-%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1/" itemprop="url">
-              
-                <span itemprop="name">Activiti(3)--数据模型设计</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2018-12-11T22:24:27+08:00"
-              content="2018-12-11" >
-          12-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
     </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/Activiti/" rel="tag"># Activiti</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/12/16/Activiti-4-%E5%A4%9A%E5%AE%9E%E4%BE%8B%E5%AE%9E%E7%8E%B0%E4%BC%9A%E7%AD%BE%E5%8A%9F%E8%83%BD/" rel="next" title="Activiti(4)--多实例实现会签功能">
+                <i class="fa fa-chevron-left"></i> Activiti(4)--多实例实现会签功能
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/12/22/Activiti-5-%E4%BB%BB%E6%84%8F%E8%8A%82%E7%82%B9%E8%B7%B3%E8%BD%AC/" rel="prev" title="Activiti(5)--任意节点跳转">
+                Activiti(5)--任意节点跳转 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/blog/archives/page/2/">2</a><a class="extend next" rel="next" href="/blog/archives/page/2/">&lt;i class&#x3D;&quot;fa fa-angle-right&quot; aria-label&#x3D;&quot;下一页&quot;&gt;&lt;&#x2F;i&gt;</a>
-  </nav>
+  </article>
 
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -821,8 +606,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -932,6 +726,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="nav-text">1. 概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-text">2. 实现方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E4%BF%AE%E6%94%B9%E6%A8%A1%E6%9D%BF"><span class="nav-text">2.1. 修改模板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E4%BF%AE%E6%94%B9%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89%E7%BC%93%E5%AD%98"><span class="nav-text">2.2 修改流程定义缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-%E6%AD%A5%E9%AA%A4"><span class="nav-text">2.2.1 步骤</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E5%8A%A0%E7%AD%BE%E5%8E%9F%E7%90%86%E4%BB%A3%E7%A0%81%E8%AE%B2%E8%A7%A3"><span class="nav-text">3. 加签原理代码讲解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%8A%A0%E7%AD%BE%E8%8A%82%E7%82%B9%E5%AD%98%E5%82%A8%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="nav-text">4. 加签节点存储表设计</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E8%A1%A8%E7%BB%93%E6%9E%84"><span class="nav-text">4.1. 表结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E5%AE%9E%E4%BD%93%E7%B1%BB"><span class="nav-text">4.2. 实体类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3-Mapper-%E7%B1%BB"><span class="nav-text">4.3. Mapper 类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-%E6%B3%A8%E5%85%A5%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8E"><span class="nav-text">4.4. 注入流程引擎</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -1072,6 +882,10 @@
 
 
   
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=6.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=6.1.0"></script>
+
+
 
   
 

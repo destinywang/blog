@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=6.1.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=6.1.0">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=6.1.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '6.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="加签的概念 思路:  直接需改模板, 在模板中添加节点以及连线, 并修改实例的走向; 直接修改路程定义对应的缓存数据, 不修改模板, 新增节点与当前需要加签的实例挂钩.  1. 方案一1.1. 实现方式 找到当前实例对象的模板数据 在模板数据的基础上添加新节点以及修改连线, 并更新数据库中的模板. 更新模板对应的流程定义缓存, 必须更新缓存否则加签的节点不会生效. 因为 Activiti 在查找流">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activiti(7)--加签功能的实现">
+<meta property="og:url" content="https://destinywang.github.io/blog/2018/12/23/Activiti-7-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="加签的概念 思路:  直接需改模板, 在模板中添加节点以及连线, 并修改实例的走向; 直接修改路程定义对应的缓存数据, 不修改模板, 新增节点与当前需要加签的实例挂钩.  1. 方案一1.1. 实现方式 找到当前实例对象的模板数据 在模板数据的基础上添加新节点以及修改连线, 并更新数据库中的模板. 更新模板对应的流程定义缓存, 必须更新缓存否则加签的节点不会生效. 因为 Activiti 在查找流">
+<meta property="og:locale">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/53721331-f7d17e00-3e9d-11e9-9680-6d8d463a5ad6.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/53721687-c4dbba00-3e9e-11e9-9432-0223776ba620.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/53778078-75e16380-3f36-11e9-91e6-ae241c08447a.png">
+<meta property="article:published_time" content="2018-12-22T18:08:46.000Z">
+<meta property="article:modified_time" content="2019-03-12T14:53:00.000Z">
+<meta property="article:author" content="destiny">
+<meta property="article:tag" content="Activiti">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/17758731/53721331-f7d17e00-3e9d-11e9-9680-6d8d463a5ad6.png">
+
+
+
+  <link rel="alternate" href="/blog/atom.xml" title="Hexo" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://destinywang.github.io/blog/2018/12/23/Activiti-7-加签功能的实现/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Activiti(7)--加签功能的实现 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/destinywang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/blog/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/blog/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />归档</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-categories">
+    <a href="/blog/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />分类</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/blog/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-about">
+    <a href="/blog/about" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />关于</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-search">
+    <a href="/blog/search" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />搜索</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-commonweal">
+    <a href="/blog/404.html" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />公益 404</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-something">
+    <a href="/blog/something" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />something</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://destinywang.github.io/blog/blog/2018/12/23/Activiti-7-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Activiti(7)--加签功能的实现</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-23T02:08:46+08:00">2018-12-23</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/" itemprop="url" rel="index"><span itemprop="name">Activiti</span></a></span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/%E5%B7%A5%E4%BD%9C%E6%B5%81/" itemprop="url" rel="index"><span itemprop="name">工作流</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>加签的概念</p>
+<p>思路:</p>
+<ol>
+<li>直接需改模板, 在模板中添加节点以及连线, 并修改实例的走向;</li>
+<li>直接修改路程定义对应的缓存数据, 不修改模板, 新增节点与当前需要加签的实例挂钩.</li>
+</ol>
+<h1 id="1-方案一"><a href="#1-方案一" class="headerlink" title="1. 方案一"></a>1. 方案一</h1><h2 id="1-1-实现方式"><a href="#1-1-实现方式" class="headerlink" title="1.1. 实现方式"></a>1.1. 实现方式</h2><ol>
+<li>找到当前实例对象的模板数据</li>
+<li>在模板数据的基础上添加新节点以及修改连线, 并更新数据库中的模板.</li>
+<li>更新模板对应的流程定义缓存, 必须更新缓存否则加签的节点不会生效. 因为 Activiti 在查找流程定义的时候会先尝试从缓存中进行获取.</li>
+<li>完成新增节点额任务后, 再把新增节点以及连线删除, 即还原模板.</li>
+</ol>
+<h2 id="1-2-优缺点"><a href="#1-2-优缺点" class="headerlink" title="1.2. 优缺点"></a>1.2. 优缺点</h2><ul>
+<li>模板是共享的, 因此修改模板就会将所有运行实例对象的模板修改.</li>
+<li>实例间应该相互独立, 不能让针对某个实例的加签影响到其他实例.</li>
+<li>修改模板容易导致当前实例影响其他实例, 因此该方案不可取;</li>
+</ul>
+<h1 id="2-方案二"><a href="#2-方案二" class="headerlink" title="2. 方案二"></a>2. 方案二</h1><ul>
+<li>模板是共享的, 因此不能修改模板, 否则会影响其他实例.</li>
+<li>也不需要修改原有流程的入线即出线, 不修改原有的走向.</li>
+</ul>
+<blockquote>
+<p>由于流程运转的过程中, 需要实时的获取该实例对应的模板数据才能知道应该如何运转.</p>
+</blockquote>
+<ol>
+<li>从流程定义缓存中获取模板数据</li>
+<li>如果流程定义缓存丢失, 则需要重新执行模板的解析工作并补充到流程定义缓存中.</li>
+</ol>
+<p>因此可以直接修改流程定义缓存数据.</p>
+<h2 id="2-1-思路"><a href="#2-1-思路" class="headerlink" title="2.1. 思路"></a>2.1. 思路</h2><p><img src="https://user-images.githubusercontent.com/17758731/53721331-f7d17e00-3e9d-11e9-9680-6d8d463a5ad6.png" alt="image"></p>
+<ol>
+<li>在流程缓存中添加一个任务节点, 并未任务节点添加出线信息, 出线连接的是需要到达的目标节点.</li>
+<li>添加的目标节点并没有入线, 并不会影响其他实例, 因此其他流程没有机会走到该节点.</li>
+<li>加签完成后触发执行实例走到新增的任务节点, 这样当前实例就按照最新的路线进行运转;</li>
+<li>如果当前节点在加签后不想直接运转到最新节点, 则可以复制一个当前节点, 继续让流程运转.</li>
+<li>加签的最终目的是让实例按照最新的路线走, 与模板中规划的路线脱离关系.</li>
+</ol>
+<p><img src="https://user-images.githubusercontent.com/17758731/53721687-c4dbba00-3e9e-11e9-9432-0223776ba620.png" alt="image"></p>
+<h2 id="2-2-引入的问题"><a href="#2-2-引入的问题" class="headerlink" title="2.2. 引入的问题"></a>2.2. 引入的问题</h2><ol>
+<li>新增的任务节点及连线如何存储</li>
+<li>流程定义缓存如何修改</li>
+<li>加签的节点以及连线信息如何持久化</li>
+<li>如果我们重新修改的流程定义缓存丢失, 引擎依然会解析数据库中保存的原有定义, 新增的节点并没有持久化到 DB</li>
+<li>流程实例结束后, 当前加签的节点以及连线如何删除.</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testAddOneTask</span><span class="params">(String taskId, String targetActivityId)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 获取当前的任务</span></span><br><span class="line">    TaskEntity taskEntity = (TaskEntity) activitiRule.getTaskService().createTaskQuery().taskId(taskId).singleResult();</span><br><span class="line">    log.info(<span class="string">&quot;taskEntity: &#123;&#125;&quot;</span>, taskEntity);</span><br><span class="line">    String processDefinitionId = taskEntity.getProcessDefinitionId();</span><br><span class="line">    ManagementService managementService = activitiRule.getManagementService();</span><br><span class="line">    Process process = managementService.executeCommand(<span class="keyword">new</span> GetProcessCmd(processDefinitionId));</span><br><span class="line">    log.info(<span class="string">&quot;process: &#123;&#125;&quot;</span>, process);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 创建新节点</span></span><br><span class="line">    UserTask userTask = <span class="keyword">new</span> UserTask();</span><br><span class="line">    userTask.setId(<span class="string">&quot;destinyD&quot;</span>);</span><br><span class="line">    userTask.setName(<span class="string">&quot;加签节点 destinyD&quot;</span>);</span><br><span class="line">    userTask.setAssignee(<span class="string">&quot;destiny-d&quot;</span>);</span><br><span class="line">    userTask.setBehavior(createUserTaskBehavior(userTask));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 新节点的目标连线</span></span><br><span class="line">    SequenceFlow sequenceFlow = <span class="keyword">new</span> SequenceFlow();</span><br><span class="line">    sequenceFlow.setId(<span class="string">&quot;extra&quot;</span>);</span><br><span class="line">    userTask.setOutgoingFlows(Arrays.asList(sequenceFlow));</span><br><span class="line">    sequenceFlow.setTargetFlowElement(process.getFlowElement(targetActivityId));</span><br><span class="line">    sequenceFlow.setTargetRef(targetActivityId);</span><br><span class="line"></span><br><span class="line">    process.addFlowElement(userTask);</span><br><span class="line">    process.addFlowElement(sequenceFlow);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 更新缓存</span></span><br><span class="line">    ProcessDefinitionCacheEntry processDefinitionCacheEntry = managementService.executeCommand(<span class="keyword">new</span> GetProcessDefinitionCacheEntryCmd(processDefinitionId));</span><br><span class="line">    processDefinitionCacheEntry.setProcess(process);</span><br><span class="line">    Process processCache = managementService.executeCommand(<span class="keyword">new</span> GetProcessDefinitionCacheEntryCmd(processDefinitionId)).getProcess();</span><br><span class="line"></span><br><span class="line">    log.info(<span class="string">&quot;processCache: &#123;&#125;&quot;</span>, processCache);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 跳转</span></span><br><span class="line">    managementService.executeCommand(<span class="keyword">new</span> JumpCmd(taskId, userTask.getId()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>但该方法产生跳转后的新 task 仍然无法提交, 会报一下错误:</p>
+<pre><code>17:59:18.971 [main] [ERROR] Error while closing command context  o.a.e.i.i.CommandContext.logException:122
+org.activiti.engine.ActivitiException: Programmatic error: no current flow element found or invalid type: null. Halting.
+at org.activiti.engine.impl.agenda.TriggerExecutionOperation.run(TriggerExecutionOperation.java:49)
+at org.activiti.engine.impl.interceptor.CommandInvoker.executeOperation(CommandInvoker.java:73)
+at org.activiti.engine.impl.interceptor.CommandInvoker.executeOperations(CommandInvoker.java:57)
+at org.activiti.engine.impl.interceptor.CommandInvoker.execute(CommandInvoker.java:42)
+at org.activiti.engine.impl.interceptor.TransactionContextInterceptor.execute(TransactionContextInterceptor.java:48)
+at org.activiti.engine.impl.interceptor.CommandContextInterceptor.execute(CommandContextInterceptor.java:63)
+at org.activiti.engine.impl.interceptor.LogInterceptor.execute(LogInterceptor.java:29)
+at org.activiti.engine.impl.cfg.CommandExecutorImpl.execute(CommandExecutorImpl.java:44)
+at org.activiti.engine.impl.cfg.CommandExecutorImpl.execute(CommandExecutorImpl.java:39)
+at org.activiti.engine.impl.TaskServiceImpl.complete(TaskServiceImpl.java:182)
+at org.destiny.activiti.addsign1.ClientTest.complete(ClientTest.java:56)
+at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+at java.lang.reflect.Method.invoke(Method.java:498)
+at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:47)
+at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:44)
+at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+at org.activiti.engine.test.ActivitiRule$1.evaluate(ActivitiRule.java:116)
+</code></pre>
+<p>出线错误的原因是加签方法执行完成后, 缓存中的数据已经被释放, complete 的时候无法继续, 需要在 complete 之前重新向缓存中添加之前的节点和连线</p>
+<p>在修改流程定义缓存而不修改模板的实现中, 我们需要一个额外的持久化方式去实现加签部分的持久化</p>
+<h2 id="2-3-持久化加签现场数据"><a href="#2-3-持久化加签现场数据" class="headerlink" title="2.3. 持久化加签现场数据"></a>2.3. 持久化加签现场数据</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `ACT_ADD_SIGN` (</span><br><span class="line">  `ID_` <span class="type">bigint</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `PROCESS_DEFINITION_ID_` <span class="type">varchar</span>(<span class="number">255</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;流程定义 ID&#x27;</span>,</span><br><span class="line">  `ASSIGNEE_` <span class="type">varchar</span>(<span class="number">32</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;操作人 ID&#x27;</span>,</span><br><span class="line">  `ACT_ID_` <span class="type">varchar</span>(<span class="number">64</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;活动 ID&#x27;</span>,</span><br><span class="line">  `PROCESS_INSTANCE_` <span class="type">varchar</span>(<span class="number">255</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;流程实例 ID&#x27;</span>,</span><br><span class="line">  `PROPERTIES_TEXT_` <span class="type">varchar</span>(<span class="number">2000</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;参数&#x27;</span>,</span><br><span class="line">  `STATE_` <span class="type">int</span>(<span class="number">11</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;状态位, 0-有效, 1-无效&#x27;</span>,</span><br><span class="line">  `CREATE_TIME` <span class="type">bigint</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span> COMMENT <span class="string">&#x27;创建时间&#x27;</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`ID_`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8</span><br></pre></td></tr></table></figure>
+
+<p>以及对应的 Mapper 文件:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AddSignMapper</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Select(&quot;select * from ACT_ADD_SIGN where STATE_ = 0 AND PROCESS_INSTANCE_ID_ = #&#123;processInstanceId&#125;&quot;)</span></span><br><span class="line">    <span class="meta">@Results(&#123;</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;id&quot;, column = &quot;ID_&quot;),</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;processDefinitionId&quot;, column = &quot;PROCESS_DEFINITION_ID_&quot;),</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;assignee&quot;, column = &quot;ASSIGNEE_&quot;),</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;processInstanceId&quot;, column = &quot;PROCESS_INSTANCE_ID_&quot;),</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;propertiesText&quot;, column = &quot;PROPERTIES_TEXT_&quot;),</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;state&quot;, column = &quot;STATE_&quot;),</span></span><br><span class="line"><span class="meta">            @Result(property = &quot;createTime&quot;, column = &quot;CREATE_TIME_&quot;),</span></span><br><span class="line"><span class="meta">    &#125;)</span></span><br><span class="line">    <span class="function">List&lt;AddSign&gt; <span class="title">find</span><span class="params">(String processInstanceId)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Insert(&quot;insert into act_creation(PROCESS_DEFINITION_ID_, PROCESS_INSTANCE_ID_, PROPERTIES_TEXT_, CREATE_TIME_) values(#&#123;processDefinitionId&#125;, #&#123;processInstanceId&#125;, #&#123;propertiesText&#125;, #&#123;createTime&#125;)&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">insert</span><span class="params">(AddSign addSign)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-4-模型定义"><a href="#2-4-模型定义" class="headerlink" title="2.4. 模型定义"></a>2.4. 模型定义</h2><h3 id="2-4-1-AddSign"><a href="#2-4-1-AddSign" class="headerlink" title="2.4.1. AddSign"></a>2.4.1. AddSign</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AddSign</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> id;</span><br><span class="line">    <span class="keyword">private</span> String processDefinitionId; <span class="comment">// 流程定义 id</span></span><br><span class="line">    <span class="keyword">private</span> String assignee;            <span class="comment">// 加签用户</span></span><br><span class="line">    <span class="keyword">private</span> String activityId;          <span class="comment">// 节点 id</span></span><br><span class="line">    <span class="keyword">private</span> String processInstanceId;   <span class="comment">// 流程实例 id</span></span><br><span class="line">    <span class="keyword">private</span> String propertiesText;      <span class="comment">// 参数(复合字段)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> state;                  <span class="comment">// 状态 0-可用, 1-不可用</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> createTime;            <span class="comment">// 创建时间</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-2-TaskModel"><a href="#2-4-2-TaskModel" class="headerlink" title="2.4.2. TaskModel"></a>2.4.2. TaskModel</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TaskModel</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> String assignee;    <span class="comment">// 处理人</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> type = <span class="number">1</span>;       <span class="comment">// 任务类型, 1-任务节点</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-3-TmpActivityModel"><a href="#2-4-3-TmpActivityModel" class="headerlink" title="2.4.3. TmpActivityModel"></a>2.4.3. TmpActivityModel</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TmpActivityModel</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String activityIds;     <span class="comment">// 加签的节点id, 多个的话逗号分隔</span></span><br><span class="line">    <span class="keyword">private</span> String firstId;</span><br><span class="line">    <span class="keyword">private</span> String lastId;</span><br><span class="line">    <span class="keyword">private</span> List&lt;TaskModel&gt; activityList;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-5-加签功能实现类"><a href="#2-5-加签功能实现类" class="headerlink" title="2.5. 加签功能实现类"></a>2.5. 加签功能实现类</h2><p><img src="https://user-images.githubusercontent.com/17758731/53778078-75e16380-3f36-11e9-91e6-ae241c08447a.png" alt="image"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AddSignService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> procDefId     流程定义 ID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> procInstId    流程实例 ID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> processEngine 流程引擎</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> taskModelList 加签节点列表</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> firstNodeId   加签开始节点 ID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lastNodeId    加签结束节点 ID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> persistence   是否持久化</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> onset         是否需要立即跳转</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> taskId        taskID</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> targetNodeId  跳转的目标节点</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addUserTask</span><span class="params">(String procDefId, String procInstId, ProcessEngine processEngine, List&lt;TaskModel&gt; taskModelList,</span></span></span><br><span class="line"><span class="function"><span class="params">                            String firstNodeId, String lastNodeId, <span class="keyword">boolean</span> persistence, <span class="keyword">boolean</span> onset, String taskId, String targetNodeId)</span> </span>&#123;</span><br><span class="line">        ManagementService managementService = processEngine.getManagementService();</span><br><span class="line">        ProcessDefinitionCacheEntry processDefinitionCacheEntry = managementService.executeCommand(<span class="keyword">new</span> GetProcessDefinitionCacheEntryCmd(procDefId));</span><br><span class="line">        <span class="comment">// 通过缓存获取</span></span><br><span class="line">        Process process = processDefinitionCacheEntry.getProcess();</span><br><span class="line">        <span class="comment">// 批量生成任务, 循环遍历 TaskModel</span></span><br><span class="line">        List&lt;UserTask&gt; userTaskList = Lists.newArrayList();</span><br><span class="line">        taskModelList.forEach(taskModel -&gt; &#123;</span><br><span class="line">            UserTask userTask = ActivityUtils.convertToUserTask(taskModel, processEngine);</span><br><span class="line">            userTaskList.add(userTask);</span><br><span class="line">            process.addFlowElement(userTask);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">// 构造并添加连线</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; userTaskList.size(); ++i) &#123;</span><br><span class="line">            UserTask userTask = userTaskList.get(i);</span><br><span class="line">            SequenceFlow sequenceFlow = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">if</span> (i == userTaskList.size() - <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="comment">// 如果是最后一个节点</span></span><br><span class="line">                sequenceFlow = ActivityUtils.buildSequenceFlow(userTask.getId() + <span class="string">&quot;--&gt;&quot;</span> + lastNodeId,</span><br><span class="line">                        userTask.getId() + <span class="string">&quot;--&gt;&quot;</span> + lastNodeId, userTask.getId(), lastNodeId);</span><br><span class="line">                sequenceFlow.setTargetRef(lastNodeId);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 如果不是最后一个</span></span><br><span class="line">                ActivityUtils.buildSequenceFlow(userTask.getId() + <span class="string">&quot;--&gt;&quot;</span> + userTaskList.get(i + <span class="number">1</span>).getId(),</span><br><span class="line">                        userTask.getId() + <span class="string">&quot;--&gt;&quot;</span> + userTaskList.get(i + <span class="number">1</span>).getId(),</span><br><span class="line">                        userTask.getId(), userTaskList.get(i + <span class="number">1</span>).getId());</span><br><span class="line">                sequenceFlow.setTargetFlowElement(userTaskList.get(i + <span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">            userTask.setOutgoingFlows(Arrays.asList());</span><br><span class="line">            process.addFlowElement(sequenceFlow);</span><br><span class="line">        &#125;</span><br><span class="line">        log.info(<span class="string">&quot;process: &#123;&#125;&quot;</span>, process);</span><br><span class="line">        <span class="comment">// 更新缓存</span></span><br><span class="line">        processDefinitionCacheEntry.setProcess(process);</span><br><span class="line">        <span class="comment">// 如果需要立即生效(直接跳转)</span></span><br><span class="line">        <span class="keyword">if</span> (onset) &#123;</span><br><span class="line">            managementService.executeCommand(<span class="keyword">new</span> JumpCmd(taskId, targetNodeId));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果需要持久化</span></span><br><span class="line">        <span class="keyword">if</span> (persistence) &#123;</span><br><span class="line">            persistenceToDB(procDefId, procInstId, firstNodeId, lastNodeId, taskModelList, processEngine);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 将加签的任务节点添加到数据库</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> procDefId</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> procInstId</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> firstNodeId</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> lastNodeId</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> taskModelList</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> processEngine</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">persistenceToDB</span><span class="params">(String procDefId, String procInstId, String firstNodeId, String lastNodeId, List&lt;TaskModel&gt; taskModelList, ProcessEngine processEngine)</span> </span>&#123;</span><br><span class="line">        ProcessEngineConfigurationImpl processEngineConfiguration = (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();</span><br><span class="line">        SqlSession sqlSession = processEngineConfiguration.getSqlSessionFactory().openSession();</span><br><span class="line">        AddSignMapper mapper = sqlSession.getMapper(AddSignMapper.class);</span><br><span class="line">        TmpActivityModel tmpActivityModel = <span class="keyword">new</span> TmpActivityModel();</span><br><span class="line">        tmpActivityModel.setFirstId(firstNodeId);</span><br><span class="line">        tmpActivityModel.setLastId(lastNodeId);</span><br><span class="line">        tmpActivityModel.setActivityList(taskModelList);</span><br><span class="line">        StringBuilder stringBuilder = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">        <span class="keyword">for</span> (TaskModel taskModel : taskModelList) &#123;</span><br><span class="line">            stringBuilder.append(taskModel.getId() + <span class="string">&quot;,&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        tmpActivityModel.setActivityIds(stringBuilder.toString());</span><br><span class="line"></span><br><span class="line">        AddSign addSign = <span class="keyword">new</span> AddSign();</span><br><span class="line">        addSign.setProcessDefinitionId(procDefId);</span><br><span class="line">        addSign.setProcessInstanceId(procInstId);</span><br><span class="line">        addSign.setPropertiesText(JSON.toJSONString(tmpActivityModel));</span><br><span class="line">        addSign.setCreateTime(System.currentTimeMillis());</span><br><span class="line">        <span class="keyword">int</span> insert = mapper.insert(addSign);</span><br><span class="line">        log.info(<span class="string">&quot;insert 结果: &#123;&#125;&quot;</span>, insert);</span><br><span class="line"></span><br><span class="line">        sqlSession.commit();</span><br><span class="line">        sqlSession.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-6-测试代码"><a href="#2-6-测试代码" class="headerlink" title="2.6. 测试代码"></a>2.6. 测试代码</h2><p>部署流程后, 通过测试代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addSignTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String taskId = <span class="string">&quot;17508&quot;</span>;</span><br><span class="line">    TaskEntity taskEntity = (TaskEntity) activitiRule.getTaskService().createTaskQuery()</span><br><span class="line">            .taskId(taskId)</span><br><span class="line">            .singleResult();</span><br><span class="line">    log.info(<span class="string">&quot;taskEntity: &#123;&#125;&quot;</span>, taskEntity);</span><br><span class="line">    String firstNodeId = <span class="string">&quot;destinyA&quot;</span>;</span><br><span class="line">    String lastNodeId = <span class="string">&quot;destinyB&quot;</span>;</span><br><span class="line">    List&lt;TaskModel&gt; taskModelList = Lists.newArrayList();</span><br><span class="line"></span><br><span class="line">    TaskModel taskModel1 = ActivityUtils.buildTaskModel(<span class="string">&quot;destinyD&quot;</span>, <span class="string">&quot;destinyD&quot;</span>, <span class="string">&quot;destiny-d&quot;</span>);</span><br><span class="line">    TaskModel taskModel2 = ActivityUtils.buildTaskModel(<span class="string">&quot;destinyD&quot;</span>, <span class="string">&quot;destinyD&quot;</span>, <span class="string">&quot;destiny-d&quot;</span>);</span><br><span class="line"></span><br><span class="line">    taskModelList.add(taskModel1);</span><br><span class="line">    taskModelList.add(taskModel2);</span><br><span class="line"></span><br><span class="line">    AddSignService addSignService = <span class="keyword">new</span> AddSignService();</span><br><span class="line">    addSignService.addUserTask(taskEntity.getProcessDefinitionId(), taskEntity.getProcessInstanceId(),</span><br><span class="line">            activitiRule.getProcessEngine(), taskModelList, firstNodeId, lastNodeId, <span class="keyword">true</span>, <span class="keyword">true</span>,</span><br><span class="line">            taskEntity.getId(), taskModelList.get(<span class="number">0</span>).getId());</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结束后我们就已经将 <code>destinyD -&gt; destinyE</code> 两个节点加签到 <code>destinyA</code> 之后, <code>destinyB</code> 之前.</p>
+<p><code>select NAME_ from ACT_RU_TASK where PROC_INST_ID_ = &#39;17504&#39;;</code> 的执行结果已经变成: <code>destinyD</code></p>
+<p>现在已经完成了加签的一部分代码, 但此时的任务是不能被正确提交的, 会报如下异常:</p>
+<pre><code>org.activiti.engine.ActivitiException: Programmatic error: no current flow element found or invalid type: null. Halting.
+at org.activiti.engine.impl.agenda.TriggerExecutionOperation.run(TriggerExecutionOperation.java:49)
+at org.activiti.engine.impl.interceptor.CommandInvoker.executeOperation(CommandInvoker.java:73)
+at org.activiti.engine.impl.interceptor.CommandInvoker.executeOperations(CommandInvoker.java:57)
+at org.activiti.engine.impl.interceptor.CommandInvoker.execute(CommandInvoker.java:42)
+at org.activiti.engine.impl.interceptor.TransactionContextInterceptor.execute(TransactionContextInterceptor.java:48)
+at org.activiti.engine.impl.interceptor.CommandContextInterceptor.execute(CommandContextInterceptor.java:63)
+at org.activiti.engine.impl.interceptor.LogInterceptor.execute(LogInterceptor.java:29)
+at org.activiti.engine.impl.cfg.CommandExecutorImpl.execute(CommandExecutorImpl.java:44)
+at org.activiti.engine.impl.cfg.CommandExecutorImpl.execute(CommandExecutorImpl.java:39)
+at org.activiti.engine.impl.TaskServiceImpl.complete(TaskServiceImpl.java:182)
+at org.destiny.activiti.addsign1.ClientTest.complete(ClientTest.java:61)
+at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+at java.lang.reflect.Method.invoke(Method.java:498)
+at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:47)
+at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:44)
+at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+at org.activiti.engine.test.ActivitiRule$1.evaluate(ActivitiRule.java:116)
+</code></pre>
+<h2 id="2-7-流程引擎启动时从-DB-加载流程定义信息"><a href="#2-7-流程引擎启动时从-DB-加载流程定义信息" class="headerlink" title="2.7. 流程引擎启动时从 DB 加载流程定义信息"></a>2.7. 流程引擎启动时从 DB 加载流程定义信息</h2><p>当流程引擎启动的时候, 如果 <code>ACT_ADD_SIGN</code> 表有数据, 就需要将对应的加签现场数据保存并添加到缓存中.</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/Activiti/" rel="tag"># Activiti</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/12/22/Activiti-5-%E4%BB%BB%E6%84%8F%E8%8A%82%E7%82%B9%E8%B7%B3%E8%BD%AC/" rel="next" title="Activiti(5)--任意节点跳转">
+                <i class="fa fa-chevron-left"></i> Activiti(5)--任意节点跳转
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2019/01/19/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E7%93%B6%E9%A2%88%E4%B8%8E%E4%BC%98%E5%8C%96/" rel="prev" title="关系型数据库的瓶颈与优化">
+                关系型数据库的瓶颈与优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/blog/archives">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/blog/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%96%B9%E6%A1%88%E4%B8%80"><span class="nav-text">1. 方案一</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="nav-text">1.1. 实现方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-text">1.2. 优缺点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%96%B9%E6%A1%88%E4%BA%8C"><span class="nav-text">2. 方案二</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E6%80%9D%E8%B7%AF"><span class="nav-text">2.1. 思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E5%BC%95%E5%85%A5%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-text">2.2. 引入的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-%E6%8C%81%E4%B9%85%E5%8C%96%E5%8A%A0%E7%AD%BE%E7%8E%B0%E5%9C%BA%E6%95%B0%E6%8D%AE"><span class="nav-text">2.3. 持久化加签现场数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-%E6%A8%A1%E5%9E%8B%E5%AE%9A%E4%B9%89"><span class="nav-text">2.4. 模型定义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-1-AddSign"><span class="nav-text">2.4.1. AddSign</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-2-TaskModel"><span class="nav-text">2.4.2. TaskModel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-3-TmpActivityModel"><span class="nav-text">2.4.3. TmpActivityModel</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0%E7%B1%BB"><span class="nav-text">2.5. 加签功能实现类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-6-%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="nav-text">2.6. 测试代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-7-%E6%B5%81%E7%A8%8B%E5%BC%95%E6%93%8E%E5%90%AF%E5%8A%A8%E6%97%B6%E4%BB%8E-DB-%E5%8A%A0%E8%BD%BD%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89%E4%BF%A1%E6%81%AF"><span class="nav-text">2.7. 流程引擎启动时从 DB 加载流程定义信息</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate"> 
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">destiny</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i>
+  <span id="busuanzi_container_site_uv">本站访客数:<span id="busuanzi_value_site_uv"></span></span>
+  
+  <!-- 由 <a class="theme-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 强力驱动 -->
+  </div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Code Alone </div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=6.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=6.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=6.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=6.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=6.1.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/love.js"></script>>

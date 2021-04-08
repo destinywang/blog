@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=6.1.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=6.1.0">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=6.1.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '6.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="1. 任意节点跳转以及原理 常规节点跳转 跳转到目标节点 跳转到目标节点的入线 跳转到目标节点的上一个节点并触发连线的条件计算   多实例节点的跳转 普通节点跳转到多实例节点 多实例节点跳转到普通节点    比如总经理审批节点跳转到请假申请节点:  思路:  可以获取总经理审批节点对应的任务 ID, 实例 ID, 执行实例 ID 可以通过 planContiuneProcessInCompensa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activiti(5)--任意节点跳转">
+<meta property="og:url" content="https://destinywang.github.io/blog/2018/12/22/Activiti-5-%E4%BB%BB%E6%84%8F%E8%8A%82%E7%82%B9%E8%B7%B3%E8%BD%AC/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="1. 任意节点跳转以及原理 常规节点跳转 跳转到目标节点 跳转到目标节点的入线 跳转到目标节点的上一个节点并触发连线的条件计算   多实例节点的跳转 普通节点跳转到多实例节点 多实例节点跳转到普通节点    比如总经理审批节点跳转到请假申请节点:  思路:  可以获取总经理审批节点对应的任务 ID, 实例 ID, 执行实例 ID 可以通过 planContiuneProcessInCompensa">
+<meta property="og:locale">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/50369657-2bf20e00-05d4-11e9-9af3-9416a020adae.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/53717197-598beb00-3e92-11e9-884e-67d2c77fe042.png">
+<meta property="article:published_time" content="2018-12-22T13:00:18.000Z">
+<meta property="article:modified_time" content="2019-03-04T08:18:18.000Z">
+<meta property="article:author" content="destiny">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/17758731/50369657-2bf20e00-05d4-11e9-9af3-9416a020adae.png">
+
+
+
+  <link rel="alternate" href="/blog/atom.xml" title="Hexo" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://destinywang.github.io/blog/2018/12/22/Activiti-5-任意节点跳转/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Activiti(5)--任意节点跳转 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/destinywang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/blog/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/blog/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />归档</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-categories">
+    <a href="/blog/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />分类</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/blog/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-about">
+    <a href="/blog/about" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />关于</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-search">
+    <a href="/blog/search" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />搜索</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-commonweal">
+    <a href="/blog/404.html" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />公益 404</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-something">
+    <a href="/blog/something" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />something</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://destinywang.github.io/blog/blog/2018/12/22/Activiti-5-%E4%BB%BB%E6%84%8F%E8%8A%82%E7%82%B9%E8%B7%B3%E8%BD%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Activiti(5)--任意节点跳转</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-22T21:00:18+08:00">2018-12-22</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="1-任意节点跳转以及原理"><a href="#1-任意节点跳转以及原理" class="headerlink" title="1. 任意节点跳转以及原理"></a>1. 任意节点跳转以及原理</h1><ul>
+<li>常规节点跳转<ul>
+<li>跳转到目标节点</li>
+<li>跳转到目标节点的入线</li>
+<li>跳转到目标节点的上一个节点并触发连线的条件计算</li>
+</ul>
+</li>
+<li>多实例节点的跳转<ul>
+<li>普通节点跳转到多实例节点</li>
+<li>多实例节点跳转到普通节点</li>
+</ul>
+</li>
+</ul>
+<p>比如总经理审批节点跳转到请假申请节点:</p>
+<p><img src="https://user-images.githubusercontent.com/17758731/50369657-2bf20e00-05d4-11e9-9af3-9416a020adae.png" alt="image"></p>
+<p>思路:</p>
+<ol>
+<li>可以获取总经理审批节点对应的任务 ID, 实例 ID, 执行实例 ID</li>
+<li>可以通过 <code>planContiuneProcessInCompensation</code> 方法让当前执行的实例按照我们预期的效果流转</li>
+<li>我们可以将当前执行实例中的 <code>currentFlowElement</code> 字段设置为 <code>请假申请</code> 节点 XML 中的 id 值;</li>
+<li>因为执行实例运转之后, 当前的任务节点并没有被删除, 所以需要手工删除;</li>
+<li>历史表跳转之前的任务节点也不会被完成, 需要手工进行完成.</li>
+</ol>
+<h2 id="1-1-实现方案"><a href="#1-1-实现方案" class="headerlink" title="1.1. 实现方案"></a>1.1. 实现方案</h2><ul>
+<li>获取 <code>ActivitiEngineAgenda</code></li>
+<li><code>commandContext.getExecutionEntityManager()</code> 获取 ExecutionEntityManager</li>
+<li><code>commandContext.getTaskEntityManager()</code> 获取 TaskEntityManager</li>
+<li>设置执行实例的运行节点</li>
+<li>触发执行实例运转</li>
+<li>设置删除当前的任务节点</li>
+<li>更新历史实例表以及历史任务表, 当前的任务节点为完成状态</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JumpCmd</span> <span class="keyword">implements</span> <span class="title">Command</span>&lt;<span class="title">Void</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String taskId;</span><br><span class="line">    <span class="keyword">private</span> String targetNodeId;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Void <span class="title">execute</span><span class="params">(CommandContext commandContext)</span> </span>&#123;</span><br><span class="line">        ActivitiEngineAgenda agenda = commandContext.getAgenda();</span><br><span class="line">        TaskEntityManager taskEntityManager = commandContext.getTaskEntityManager();</span><br><span class="line">        TaskEntity taskEntity = taskEntityManager.findById(taskId);</span><br><span class="line">        <span class="comment">// 执行实例 id</span></span><br><span class="line">        String executionId = taskEntity.getExecutionId();</span><br><span class="line">        String processDefinitionId = taskEntity.getProcessDefinitionId();</span><br><span class="line">        ExecutionEntityManager executionEntityManager = commandContext.getExecutionEntityManager();</span><br><span class="line">        HistoryManager historyManager = commandContext.getHistoryManager();</span><br><span class="line">        <span class="comment">// 执行实例对象</span></span><br><span class="line">        ExecutionEntity executionEntity = executionEntityManager.findById(executionId);</span><br><span class="line">        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);</span><br><span class="line">        FlowElement flowElement = process.getFlowElement(targetNodeId);</span><br><span class="line">        <span class="keyword">if</span> (flowElement == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;目标节点不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将历史活动表更新</span></span><br><span class="line">        historyManager.recordActivityEnd(executionEntity, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="comment">// 设置当前流程</span></span><br><span class="line">        executionEntity.setCurrentFlowElement(flowElement);</span><br><span class="line">        <span class="comment">// 跳转, 触发执行实例运转</span></span><br><span class="line">        agenda.planContinueProcessInCompensation(executionEntity);</span><br><span class="line">        <span class="comment">// 从runtime 表中删除当前任务</span></span><br><span class="line">        taskEntityManager.delete(taskId);</span><br><span class="line">        <span class="comment">// 将历史任务表更新, 历史任务标记为完成</span></span><br><span class="line">        historyManager.recordTaskEnd(taskId, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-测试场景"><a href="#1-2-测试场景" class="headerlink" title="1.2. 测试场景"></a>1.2. 测试场景</h2><p>假设有如下流程定义:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">definitions</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.omg.org/spec/BPMN/20100524/MODEL&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span> <span class="attr">xmlns:activiti</span>=<span class="string">&quot;http://activiti.org/bpmn&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:bpmndi</span>=<span class="string">&quot;http://www.omg.org/spec/BPMN/20100524/DI&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:omgdc</span>=<span class="string">&quot;http://www.omg.org/spec/DD/20100524/DC&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:omgdi</span>=<span class="string">&quot;http://www.omg.org/spec/DD/20100524/DI&quot;</span> <span class="attr">typeLanguage</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">expressionLanguage</span>=<span class="string">&quot;http://www.w3.org/1999/XPath&quot;</span> <span class="attr">targetNamespace</span>=<span class="string">&quot;http://www.activiti.org/test&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;my-process&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;start&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow1&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;start&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;destiny1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow2&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;destiny2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow3&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;end&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;end&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;/<span class="name">process</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">definitions</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>结构如下:</p>
+<pre><code>start -&gt; userTask1 -&gt; userTask2 -&gt; end
+</code></pre>
+<p>使用如下的执行顺序:</p>
+<ol>
+<li>startProcessInstance</li>
+<li>complete 任务 userTask1</li>
+<li>执行 <code>ManagementService().executeCommand(new JumpCmd(&quot;7502&quot;, &quot;userTask1&quot;))</code></li>
+<li>complete 任务 userTask1</li>
+<li>执行 <code>ManagementService().executeCommand(new JumpCmd(&quot;7502&quot;, &quot;userTask1&quot;))</code></li>
+</ol>
+<p>然后查询 <code>ACT_HI_ACTINST</code> 表, 能够看到如下执行轨迹:</p>
+<table>
+<thead>
+<tr>
+<th>ID_</th>
+<th>PROC_DEF_ID_</th>
+<th>PROC_INST_ID_</th>
+<th>EXECUTION_ID_</th>
+<th>ACT_ID_</th>
+<th>TASK_ID_</th>
+<th>CALL_PROC_INST_ID_</th>
+<th>ACT_NAME_</th>
+<th>ACT_NAME_</th>
+<th>ASSIGNEE_</th>
+<th>START_TIME_</th>
+<th>END_TIME_</th>
+<th>DURATION_</th>
+<th>DELETE_REASON_</th>
+<th>TENANT_ID_</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>6</td>
+<td>my-process:1:3</td>
+<td>4</td>
+<td>5</td>
+<td>start</td>
+<td></td>
+<td></td>
+<td>startEvent</td>
+<td></td>
+<td>2019-03-04 00:37:54.328</td>
+<td>2019-03-04 00:37:54.330</td>
+<td>2</td>
+<td>“”</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>my-process:1:3</td>
+<td>4</td>
+<td>5</td>
+<td>userTask1</td>
+<td>8</td>
+<td></td>
+<td>userTask1</td>
+<td>userTask</td>
+<td>destiny1</td>
+<td>2019-03-04 00:37:54.331</td>
+<td>2019-03-04 00:38:19.920</td>
+<td>25589</td>
+<td></td>
+<td>“”</td>
+</tr>
+<tr>
+<td>2501</td>
+<td>my-process:1:3</td>
+<td>4</td>
+<td>5</td>
+<td>userTask2</td>
+<td>2502</td>
+<td></td>
+<td>userTask2</td>
+<td>userTask</td>
+<td>destiny2</td>
+<td>2019-03-04 00:38:19.933</td>
+<td>2019-03-04 00:38:44.834</td>
+<td>24901</td>
+<td>jump</td>
+<td>“”</td>
+</tr>
+<tr>
+<td>5001</td>
+<td>my-process:1:3</td>
+<td>4</td>
+<td>5</td>
+<td>userTask1</td>
+<td>5002</td>
+<td></td>
+<td>userTask1</td>
+<td>userTask</td>
+<td>destiny1</td>
+<td>2019-03-04 00:38:44.848</td>
+<td>2019-03-04 00:39:02.232</td>
+<td>17384</td>
+<td></td>
+<td>“”</td>
+</tr>
+<tr>
+<td>7501</td>
+<td>my-process:1:3</td>
+<td>4</td>
+<td>5</td>
+<td>userTask2</td>
+<td>7502</td>
+<td></td>
+<td>userTask2</td>
+<td>userTask</td>
+<td>destiny2</td>
+<td>2019-03-04 00:39:02.245</td>
+<td>2019-03-04 00:39:19.718</td>
+<td>17473</td>
+<td>jump</td>
+<td>“”</td>
+</tr>
+<tr>
+<td>10001</td>
+<td>my-process:1:3</td>
+<td>4</td>
+<td>5</td>
+<td>userTask1</td>
+<td>10002</td>
+<td>userTask1</td>
+<td>userTask</td>
+<td>destiny1</td>
+<td>2019-03-04 00:39:19.743</td>
+<td></td>
+<td></td>
+<td></td>
+<td>“”</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>可以看到我们已经完成了简单条件下的跳转</p>
+<h2 id="1-3-关于自由跳转时历史活动不更新问题的解决"><a href="#1-3-关于自由跳转时历史活动不更新问题的解决" class="headerlink" title="1.3. 关于自由跳转时历史活动不更新问题的解决"></a>1.3. 关于自由跳转时历史活动不更新问题的解决</h2><p>之前遇到一个错误的写法: </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JumpCmd</span> <span class="keyword">implements</span> <span class="title">Command</span>&lt;<span class="title">Void</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String taskId;</span><br><span class="line">    <span class="keyword">private</span> String targetNodeId;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Void <span class="title">execute</span><span class="params">(CommandContext commandContext)</span> </span>&#123;</span><br><span class="line">        ActivitiEngineAgenda agenda = commandContext.getAgenda();</span><br><span class="line">        TaskEntityManager taskEntityManager = commandContext.getTaskEntityManager();</span><br><span class="line">        TaskEntity taskEntity = taskEntityManager.findById(taskId);</span><br><span class="line">        <span class="comment">// 执行实例 id</span></span><br><span class="line">        String executionId = taskEntity.getExecutionId();</span><br><span class="line">        String processDefinitionId = taskEntity.getProcessDefinitionId();</span><br><span class="line">        ExecutionEntityManager executionEntityManager = commandContext.getExecutionEntityManager();</span><br><span class="line">        HistoryManager historyManager = commandContext.getHistoryManager();</span><br><span class="line">        <span class="comment">// 执行实例对象</span></span><br><span class="line">        ExecutionEntity executionEntity = executionEntityManager.findById(executionId);</span><br><span class="line">        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);</span><br><span class="line">        FlowElement flowElement = process.getFlowElement(targetNodeId);</span><br><span class="line">        <span class="keyword">if</span> (flowElement == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;目标节点不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 设置当前流程</span></span><br><span class="line">        executionEntity.setCurrentFlowElement(flowElement);</span><br><span class="line">        <span class="comment">// 跳转, 触发执行实例运转</span></span><br><span class="line">        agenda.planContinueProcessInCompensation(executionEntity);</span><br><span class="line">        <span class="comment">// 从runtime 表中删除当前任务</span></span><br><span class="line">        taskEntityManager.delete(taskId);</span><br><span class="line">        <span class="comment">// 将历史活动表更新</span></span><br><span class="line">        historyManager.recordActivityEnd(executionEntity, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="comment">// 将历史任务表更新, 历史任务标记为完成</span></span><br><span class="line">        historyManager.recordTaskEnd(taskId, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与上文中正确写法的不同之处在于数据库更新操作的顺序. 但仅仅更换顺序也会到导致历史表中数据无法正确结束.</p>
+<p>问题的原因在于第 25 行的时候已经为执行实例执行了 <code>setCurrentFlowElement()</code> 操作, 设置了最新的流程元素, 所以如果在后面再执行对 <code>ACT_HI_ACTINST</code> 的更新, 就无法找到正确的 FlowElement. 所以需要将 <code>historyManager.recordActivityEnd(executionEntity, &quot;jump&quot;);</code> 放在第 25 行之前</p>
+<h1 id="2-跳转到目标节点的入线"><a href="#2-跳转到目标节点的入线" class="headerlink" title="2. 跳转到目标节点的入线"></a>2. 跳转到目标节点的入线</h1><p>假设有如下流程定义:</p>
+<p><img src="https://user-images.githubusercontent.com/17758731/53717197-598beb00-3e92-11e9-884e-67d2c77fe042.png" alt="image"></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">definitions</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.omg.org/spec/BPMN/20100524/MODEL&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span> <span class="attr">xmlns:activiti</span>=<span class="string">&quot;http://activiti.org/bpmn&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:bpmndi</span>=<span class="string">&quot;http://www.omg.org/spec/BPMN/20100524/DI&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:omgdc</span>=<span class="string">&quot;http://www.omg.org/spec/DD/20100524/DC&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">xmlns:omgdi</span>=<span class="string">&quot;http://www.omg.org/spec/DD/20100524/DI&quot;</span> <span class="attr">typeLanguage</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema&quot;</span></span></span><br><span class="line"><span class="tag">             <span class="attr">expressionLanguage</span>=<span class="string">&quot;http://www.w3.org/1999/XPath&quot;</span> <span class="attr">targetNamespace</span>=<span class="string">&quot;http://www.activiti.org/test&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;my-process&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;start&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;destiny1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;destiny2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask3&quot;</span> <span class="attr">name</span>=<span class="string">&quot;userTask3&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;destiny3&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;end1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;end2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;start&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask2&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">conditionExpression</span>&gt;</span>$&#123;condition==1&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">sequenceFlow</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask3&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">conditionExpression</span>&gt;</span>$&#123;condition==2&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">sequenceFlow</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;end1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask3&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;end2&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">process</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">definitions</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>将原先的跳转命令类稍作修改:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SequenceFlowJumpCmd</span> <span class="keyword">implements</span> <span class="title">Command</span>&lt;<span class="title">Void</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String taskId;</span><br><span class="line">    <span class="keyword">private</span> String targetNodeId;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Void <span class="title">execute</span><span class="params">(CommandContext commandContext)</span> </span>&#123;</span><br><span class="line">        ActivitiEngineAgenda agenda = commandContext.getAgenda();</span><br><span class="line">        TaskEntityManager taskEntityManager = commandContext.getTaskEntityManager();</span><br><span class="line">        TaskEntity taskEntity = taskEntityManager.findById(taskId);</span><br><span class="line">        <span class="comment">// 执行实例 id</span></span><br><span class="line">        String executionId = taskEntity.getExecutionId();</span><br><span class="line">        String processDefinitionId = taskEntity.getProcessDefinitionId();</span><br><span class="line">        ExecutionEntityManager executionEntityManager = commandContext.getExecutionEntityManager();</span><br><span class="line">        HistoryManager historyManager = commandContext.getHistoryManager();</span><br><span class="line">        <span class="comment">// 执行实例对象</span></span><br><span class="line">        ExecutionEntity executionEntity = executionEntityManager.findById(executionId);</span><br><span class="line">        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);</span><br><span class="line">        FlowElement flowElement = process.getFlowElement(targetNodeId);</span><br><span class="line">        <span class="keyword">if</span> (flowElement == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;目标节点不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        SequenceFlow sequenceFlow = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (flowElement <span class="keyword">instanceof</span> FlowNode) &#123;</span><br><span class="line">            FlowNode flowNode = (FlowNode) flowElement;</span><br><span class="line">            <span class="comment">// 找到所有的入线, 并取其中唯一的一条</span></span><br><span class="line">            List&lt;SequenceFlow&gt; incomingFlows = flowNode.getIncomingFlows();</span><br><span class="line">            sequenceFlow = incomingFlows.get(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (sequenceFlow == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;目标连线不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 将历史活动表更新</span></span><br><span class="line">        historyManager.recordActivityEnd(executionEntity, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="comment">// 设置当前流程</span></span><br><span class="line">        executionEntity.setCurrentFlowElement(sequenceFlow);</span><br><span class="line">        <span class="comment">// 触发执行实例运转, 第二个参数为是否参与计算</span></span><br><span class="line">        agenda.planTakeOutgoingSequenceFlowsOperation(executionEntity, <span class="keyword">true</span>);</span><br><span class="line">        <span class="comment">// 从runtime 表中删除当前任务</span></span><br><span class="line">        taskEntityManager.delete(taskId);</span><br><span class="line">        <span class="comment">// 将历史任务表更新, 历史任务标记为完成</span></span><br><span class="line">        historyManager.recordTaskEnd(taskId, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>通过连线触发实例的时候, 连线上的条件不会参与计算</li>
+<li>只有实例经过节点, 网关的时候, 连线上的条件才会经过计算</li>
+</ul>
+<h1 id="3-跳转到目标节点入线连接的节点"><a href="#3-跳转到目标节点入线连接的节点" class="headerlink" title="3. 跳转到目标节点入线连接的节点"></a>3. 跳转到目标节点入线连接的节点</h1><p>因为实例是从节点离开, 因此后面的连线是可以参与运算的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AllArgsConstructor</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SequenceFlowSourceJumpCmd</span> <span class="keyword">implements</span> <span class="title">Command</span>&lt;<span class="title">Void</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String taskId;</span><br><span class="line">    <span class="keyword">private</span> String targetNodeId;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Object&gt; condition;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Void <span class="title">execute</span><span class="params">(CommandContext commandContext)</span> </span>&#123;</span><br><span class="line">        ActivitiEngineAgenda agenda = commandContext.getAgenda();</span><br><span class="line">        TaskEntityManager taskEntityManager = commandContext.getTaskEntityManager();</span><br><span class="line">        TaskEntity taskEntity = taskEntityManager.findById(taskId);</span><br><span class="line">        <span class="comment">// 执行实例 id</span></span><br><span class="line">        String executionId = taskEntity.getExecutionId();</span><br><span class="line">        String processDefinitionId = taskEntity.getProcessDefinitionId();</span><br><span class="line">        ExecutionEntityManager executionEntityManager = commandContext.getExecutionEntityManager();</span><br><span class="line">        HistoryManager historyManager = commandContext.getHistoryManager();</span><br><span class="line">        <span class="comment">// 执行实例对象</span></span><br><span class="line">        ExecutionEntity executionEntity = executionEntityManager.findById(executionId);</span><br><span class="line">        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);</span><br><span class="line">        FlowElement flowElement = process.getFlowElement(targetNodeId);</span><br><span class="line">        <span class="keyword">if</span> (flowElement == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;目标节点不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        SequenceFlow sequenceFlow = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">if</span> (flowElement <span class="keyword">instanceof</span> FlowNode) &#123;</span><br><span class="line">            FlowNode flowNode = (FlowNode) flowElement;</span><br><span class="line">            <span class="comment">// 找到所有的入线, 并取其中唯一的一条</span></span><br><span class="line">            List&lt;SequenceFlow&gt; incomingFlows = flowNode.getIncomingFlows();</span><br><span class="line">            sequenceFlow = incomingFlows.get(<span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (sequenceFlow == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;目标连线不存在&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        FlowElement sourceFlowElement = sequenceFlow.getSourceFlowElement();</span><br><span class="line">        executionEntity.setVariables(condition);</span><br><span class="line">        <span class="comment">// 将历史活动表更新</span></span><br><span class="line">        historyManager.recordActivityEnd(executionEntity, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="comment">// 设置当前流程</span></span><br><span class="line">        executionEntity.setCurrentFlowElement(sourceFlowElement);</span><br><span class="line">        <span class="comment">// 触发执行实例运转, 第二个参数为是否参与计算</span></span><br><span class="line">        agenda.planTakeOutgoingSequenceFlowsOperation(executionEntity, <span class="keyword">true</span>);</span><br><span class="line">        <span class="comment">// 从runtime 表中删除当前任务</span></span><br><span class="line">        taskEntityManager.delete(taskId);</span><br><span class="line">        <span class="comment">// 将历史任务表更新, 历史任务标记为完成</span></span><br><span class="line">        historyManager.recordTaskEnd(taskId, <span class="string">&quot;jump&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/12/22/Activiti-6-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" rel="next" title="Activiti(6)--加签功能的实现">
+                <i class="fa fa-chevron-left"></i> Activiti(6)--加签功能的实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/12/23/Activiti-7-%E5%8A%A0%E7%AD%BE%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0/" rel="prev" title="Activiti(7)--加签功能的实现">
+                Activiti(7)--加签功能的实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/blog/archives">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/blog/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E4%BB%BB%E6%84%8F%E8%8A%82%E7%82%B9%E8%B7%B3%E8%BD%AC%E4%BB%A5%E5%8F%8A%E5%8E%9F%E7%90%86"><span class="nav-text">1. 任意节点跳转以及原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88"><span class="nav-text">1.1. 实现方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-%E6%B5%8B%E8%AF%95%E5%9C%BA%E6%99%AF"><span class="nav-text">1.2. 测试场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-%E5%85%B3%E4%BA%8E%E8%87%AA%E7%94%B1%E8%B7%B3%E8%BD%AC%E6%97%B6%E5%8E%86%E5%8F%B2%E6%B4%BB%E5%8A%A8%E4%B8%8D%E6%9B%B4%E6%96%B0%E9%97%AE%E9%A2%98%E7%9A%84%E8%A7%A3%E5%86%B3"><span class="nav-text">1.3. 关于自由跳转时历史活动不更新问题的解决</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E8%B7%B3%E8%BD%AC%E5%88%B0%E7%9B%AE%E6%A0%87%E8%8A%82%E7%82%B9%E7%9A%84%E5%85%A5%E7%BA%BF"><span class="nav-text">2. 跳转到目标节点的入线</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%B7%B3%E8%BD%AC%E5%88%B0%E7%9B%AE%E6%A0%87%E8%8A%82%E7%82%B9%E5%85%A5%E7%BA%BF%E8%BF%9E%E6%8E%A5%E7%9A%84%E8%8A%82%E7%82%B9"><span class="nav-text">3. 跳转到目标节点入线连接的节点</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate"> 
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">destiny</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i>
+  <span id="busuanzi_container_site_uv">本站访客数:<span id="busuanzi_value_site_uv"></span></span>
+  
+  <!-- 由 <a class="theme-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 强力驱动 -->
+  </div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Code Alone </div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=6.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=6.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=6.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=6.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=6.1.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/love.js"></script>>

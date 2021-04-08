@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=6.1.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=6.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=6.1.0">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=6.1.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '6.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="BPMN2.0:  是一套业务流程模型与符号建模标准 精准的执行语义来描述元素的操作 以 XML 为载体, 以符号可视化业务  BPMN2.0元素:  流对象 连接对象 数据 泳道 描述对象   其中最重要的流对象, 流对象包括活动, 事件和网关, 通过连接对象连接起来, 用来表示数据的流转, 泳道用来对业务的范围做区分, 描述对象并不影响业务的进行, 为流程图的可读性做补充性的描述.   1.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activiti(2)--BPMN2.0规范">
+<meta property="og:url" content="https://destinywang.github.io/blog/2018/12/08/Activiti-2-BPMN2-0%E8%A7%84%E8%8C%83/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="BPMN2.0:  是一套业务流程模型与符号建模标准 精准的执行语义来描述元素的操作 以 XML 为载体, 以符号可视化业务  BPMN2.0元素:  流对象 连接对象 数据 泳道 描述对象   其中最重要的流对象, 流对象包括活动, 事件和网关, 通过连接对象连接起来, 用来表示数据的流转, 泳道用来对业务的范围做区分, 描述对象并不影响业务的进行, 为流程图的可读性做补充性的描述.   1.">
+<meta property="og:locale">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49372749-a26ac100-f736-11e8-89f1-b01d14fa6f1d.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49372819-d0e89c00-f736-11e8-984f-34464892a1b9.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49680055-62576580-facb-11e8-97d2-daa701f4993f.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49680088-d1cd5500-facb-11e8-8cd7-94c1b85d7402.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49682183-c3dafc80-faea-11e8-9160-48f2f59d1c3f.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49683712-2bea0c80-fb04-11e8-9a9d-f580144f604d.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49684049-f562c080-fb08-11e8-9c3f-ef357ceb32b7.png">
+<meta property="og:image" content="https://user-images.githubusercontent.com/17758731/49684527-edf2e580-fb0f-11e8-9c43-d8e34140d663.png">
+<meta property="article:published_time" content="2018-12-07T16:08:52.000Z">
+<meta property="article:modified_time" content="2018-12-08T10:30:53.000Z">
+<meta property="article:author" content="destiny">
+<meta property="article:tag" content="Activiti">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://user-images.githubusercontent.com/17758731/49372749-a26ac100-f736-11e8-89f1-b01d14fa6f1d.png">
+
+
+
+  <link rel="alternate" href="/blog/atom.xml" title="Hexo" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://destinywang.github.io/blog/2018/12/08/Activiti-2-BPMN2-0规范/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Activiti(2)--BPMN2.0规范 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/destinywang"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"> 
+
+<div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+          
+  <li class="menu-item menu-item-home">
+    <a href="/blog/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />首页</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-archives">
+    <a href="/blog/archives" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />归档</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-categories">
+    <a href="/blog/categories" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />分类</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-tags">
+    <a href="/blog/tags" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />标签</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-about">
+    <a href="/blog/about" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />关于</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-search">
+    <a href="/blog/search" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />搜索</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-commonweal">
+    <a href="/blog/404.html" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />公益 404</a>
+</li>
+
+      
+        
+        
+          
+  <li class="menu-item menu-item-something">
+    <a href="/blog/something" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />something</a>
+</li>
+
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+  
+
+
+
+ </div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://destinywang.github.io/blog/blog/2018/12/08/Activiti-2-BPMN2-0%E8%A7%84%E8%8C%83/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Activiti(2)--BPMN2.0规范</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-08T00:08:52+08:00">2018-12-08</time>
+            
+
+            
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/" itemprop="url" rel="index"><span itemprop="name">Activiti</span></a></span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/%E5%B7%A5%E4%BD%9C%E6%B5%81/" itemprop="url" rel="index"><span itemprop="name">工作流</span></a></span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/blog/categories/Activiti/%E5%B7%A5%E4%BD%9C%E6%B5%81/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>BPMN2.0:</p>
+<ul>
+<li>是一套业务流程模型与符号建模标准</li>
+<li>精准的执行语义来描述元素的操作</li>
+<li>以 XML 为载体, 以符号可视化业务</li>
+</ul>
+<p>BPMN2.0元素:</p>
+<ul>
+<li>流对象</li>
+<li>连接对象</li>
+<li>数据</li>
+<li>泳道</li>
+<li>描述对象</li>
+</ul>
+<blockquote>
+<p>其中最重要的流对象, 流对象包括活动, 事件和网关, 通过连接对象连接起来, 用来表示数据的流转, 泳道用来对业务的范围做区分, 描述对象并不影响业务的进行, 为流程图的可读性做补充性的描述.</p>
+</blockquote>
+<p><img src="https://user-images.githubusercontent.com/17758731/49372749-a26ac100-f736-11e8-89f1-b01d14fa6f1d.png" alt="image"><br><img src="https://user-images.githubusercontent.com/17758731/49372819-d0e89c00-f736-11e8-984f-34464892a1b9.png" alt="image"></p>
+<h1 id="1-事件"><a href="#1-事件" class="headerlink" title="1. 事件"></a>1. 事件</h1><h2 id="1-1-分类"><a href="#1-1-分类" class="headerlink" title="1.1 分类"></a>1.1 分类</h2><p>按照位置分类:</p>
+<ul>
+<li>开始事件</li>
+<li>中间事件/边界事件(中间事件是指出现在流程中, 可以单独作为流程节点的事件, 而边界事件指的是附属于某个流程节点的事件)</li>
+<li>结束事件</li>
+</ul>
+<p>按照特征分类:</p>
+<ul>
+<li>捕获时间, 捕获事件是一直在等待被触发的事件, 所有的开始事件都是等待被触发的事件</li>
+<li>抛出事件, 执行到节点会自动执行并抛出结果, 结束事件都属于抛出事件.</li>
+</ul>
+<p>按照定义分类:</p>
+<ul>
+<li>定时事件</li>
+<li>错误事件</li>
+<li>信号事件</li>
+<li>消息事件</li>
+</ul>
+<h3 id="1-1-1-定时事件"><a href="#1-1-1-定时事件" class="headerlink" title="1.1.1 定时事件"></a>1.1.1 定时事件</h3><blockquote>
+<p>在使用定时事件时, 首先需要流程引擎的异步开关打开</p>
+</blockquote>
+<ul>
+<li>指定时间(timeDate)</li>
+<li>指定持续时间(timeDuration)</li>
+<li>周期执行(timeCycle)</li>
+</ul>
+<p>定时事件的定义方式: </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">timerEventDefinition</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 指定定时时间的类型: timeDate --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">timeDate</span>&gt;</span>2018-01-01T10:10:10<span class="tag">&lt;/<span class="name">timeDate</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">timerEventDefinition</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-1-1-定时开始事件"><a href="#1-1-1-1-定时开始事件" class="headerlink" title="1.1.1.1 定时开始事件"></a>1.1.1.1 定时开始事件</h4><p><img src="https://user-images.githubusercontent.com/17758731/49680055-62576580-facb-11e8-97d2-daa701f4993f.png" alt="image"></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;timerStartEvent&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Timer Start&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">timerEventDefinition</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--在流程部署完成 5 分钟后,  执行5次 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">timeCycle</span>&gt;</span>R5/PT5M<span class="tag">&lt;/<span class="name">timeCycle</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">timerEventDefinition</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">startEvent</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-1-2-定时边界事件"><a href="#1-1-1-2-定时边界事件" class="headerlink" title="1.1.1.2 定时边界事件"></a>1.1.1.2 定时边界事件</h4><blockquote>
+<p>流程流转到一个普通任务时, 如果在指定时间内没有完成, 就会触发定时边界事件</p>
+</blockquote>
+<p><img src="https://user-images.githubusercontent.com/17758731/49680088-d1cd5500-facb-11e8-8cd7-94c1b85d7402.png" alt="image"></p>
+<h5 id="流程定义"><a href="#流程定义" class="headerlink" title="流程定义"></a>流程定义</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;startEvent&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;commonTask&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Common Task&quot;</span>/&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 声明边界事件, attachedToRef 指定边界事件的宿主 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">boundaryEvent</span> <span class="attr">id</span>=<span class="string">&quot;boundaryEvent&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Timer&quot;</span> <span class="attr">attachedToRef</span>=<span class="string">&quot;commonTask&quot;</span> <span class="attr">cancelActivity</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">timerEventDefinition</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 部署完 5 秒之后 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">timeDuration</span>&gt;</span>PT5S<span class="tag">&lt;/<span class="name">timeDuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">timerEventDefinition</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">boundaryEvent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;timeoutTask&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Timeout Task&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;end1&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;end2&quot;</span>/&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 构建顺序流 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;startEvent&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;commonTask&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;commonTask&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;end1&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;boundaryEvent&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;timeoutTask&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">sourceRef</span>=<span class="string">&quot;timeoutTask&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;end2&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 超时边界事件</span></span><br><span class="line"><span class="comment"> * 流程启动之后, 流转到 commonTask, 此时让当前线程休眠 10 秒(5秒就会超时)</span></span><br><span class="line"><span class="comment"> * 定时任务超时后执行 timeoutTask</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="meta">@Deployment(resources = &#123;&quot;org/destiny/activiti/my-process-time-boundary.bpmn20.xml&quot;&#125;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testTimerBoundary</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    activitiRule.getRuntimeService().startProcessInstanceByKey(<span class="string">&quot;my-process&quot;</span>);</span><br><span class="line">    <span class="comment">// task 列表</span></span><br><span class="line">    List&lt;Task&gt; taskList = activitiRule.getTaskService().createTaskQuery().list();</span><br><span class="line">    log.info(<span class="string">&quot;task 总数: &#123;&#125;&quot;</span>, taskList.size());</span><br><span class="line">    <span class="keyword">for</span> (Task task : taskList) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;task.name = &#123;&#125;&quot;</span>, task.getName());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 强制睡眠等待边界事件触发</span></span><br><span class="line">    Thread.sleep(<span class="number">10</span> * <span class="number">1000</span>);</span><br><span class="line">    <span class="comment">// task 列表</span></span><br><span class="line">    taskList = activitiRule.getTaskService().createTaskQuery().list();</span><br><span class="line">    log.info(<span class="string">&quot;休眠后 task 总数: &#123;&#125;&quot;</span>, taskList.size());</span><br><span class="line">    <span class="keyword">for</span> (Task task : taskList) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;休眠后 task.name = &#123;&#125;&quot;</span>, task.getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="日志输出"><a href="#日志输出" class="headerlink" title="日志输出"></a>日志输出</h5><pre><code>11:06:06,568 [main] INFO  org.destiny.activiti.bpmn20.TimerEventTest  - task 总数: 1
+11:06:06,568 [main] INFO  org.destiny.activiti.bpmn20.TimerEventTest  - task.name = Common Task
+...
+11:06:16,573 [main] INFO  org.destiny.activiti.bpmn20.TimerEventTest  - 休眠后 task 总数: 1
+11:06:16,573 [main] INFO  org.destiny.activiti.bpmn20.TimerEventTest  - 休眠后 task.name = Timeout Task
+</code></pre>
+<h3 id="1-1-2-错误事件"><a href="#1-1-2-错误事件" class="headerlink" title="1.1.2 错误事件"></a>1.1.2 错误事件</h3><blockquote>
+<p>网关中由提交的表单信息判断正常结束还是异常结束, 错误事件会被错误信息所触发, 主要用于处理业务异常</p>
+</blockquote>
+<p><img src="https://user-images.githubusercontent.com/17758731/49682183-c3dafc80-faea-11e8-9160-48f2f59d1c3f.png" alt="image"></p>
+<blockquote>
+<h4 id="流程图简单分析"><a href="#流程图简单分析" class="headerlink" title="流程图简单分析"></a>流程图简单分析</h4><blockquote>
+<p>提交一个新的 <code>sales leader</code>, 创建一个子流程, 在子流程中同时对 <code>customer rating</code> 以及 <code>profitability</code> 进行考察, 如果同时通过, 则结束子流程, 完成主流程的 <code>Store lead in CRM system</code> 任务以及结束节点</p>
+<blockquote>
+<p>如果 <code>profitability</code> 任务没有提供足够的信息, 则会抛出错误事件, 错误事件被边界事件所捕获, 进入 <code>Provide additional details</code> 流程, 并进入开始子流程</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h4 id="流程定义-1"><a href="#流程定义-1" class="headerlink" title="流程定义"></a>流程定义</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">error</span> <span class="attr">id</span>=<span class="string">&quot;notEnoughInfoError&quot;</span> <span class="attr">errorCode</span>=<span class="string">&quot;not_enough_info&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;reviewSaledLead&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Review sales lead&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;theStart&quot;</span> <span class="attr">activiti:initiator</span>=<span class="string">&quot;initiator&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow1&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;theStart&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;provideNewSalesLead&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;provideNewSalesLead&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Provide new sales lead&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;$&#123;initiator&#125;&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">extensionElements</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">activiti:formProperty</span> <span class="attr">id</span>=<span class="string">&quot;customerName&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Customer name&quot;</span> <span class="attr">type</span>=<span class="string">&quot;string&quot;</span> <span class="attr">required</span>=<span class="string">&quot;true&quot;</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">activiti:formProperty</span> <span class="attr">id</span>=<span class="string">&quot;potentialProfit&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Potential profit&quot;</span> <span class="attr">type</span>=<span class="string">&quot;long&quot;</span> /&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">activiti:formProperty</span> <span class="attr">id</span>=<span class="string">&quot;details&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Details&quot;</span> <span class="attr">type</span>=<span class="string">&quot;string&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">extensionElements</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">userTask</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow2&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;provideNewSalesLead&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;reviewSalesLeadSubProcess&quot;</span>/&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 子流程 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">subProcess</span> <span class="attr">id</span>=<span class="string">&quot;reviewSalesLeadSubProcess&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Review sales lead&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;subProcessStart&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow3&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;subProcessStart&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;fork&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow4&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;fork&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;reviewProfitability&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">parallelGateway</span> <span class="attr">id</span>=<span class="string">&quot;fork&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow5&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;fork&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;reviewCustomerRating&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;reviewCustomerRating&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Review customer rating&quot;</span> <span class="attr">activiti:candidateGroups</span>=<span class="string">&quot;accountancy&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow6&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;reviewCustomerRating&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;subProcessEnd1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;subProcessEnd1&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;reviewProfitability&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Review profitability&quot;</span> <span class="attr">activiti:candidateGroups</span>=<span class="string">&quot;management&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">documentation</span>&gt;</span></span><br><span class="line">                $&#123;initiator&#125; has published a new sales lead: $&#123;customerName&#125;. Details: $&#123;details&#125;</span><br><span class="line">            <span class="tag">&lt;/<span class="name">documentation</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">extensionElements</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">activiti:formProperty</span> <span class="attr">id</span>=<span class="string">&quot;notEnoughInformation&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Do you believe this customer is profitable?&quot;</span> <span class="attr">type</span>=<span class="string">&quot;enum&quot;</span> <span class="attr">required</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">activiti:value</span> <span class="attr">id</span>=<span class="string">&quot;false&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Yes&quot;</span> /&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">activiti:value</span> <span class="attr">id</span>=<span class="string">&quot;true&quot;</span> <span class="attr">name</span>=<span class="string">&quot;No (= request more info)&quot;</span> /&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">activiti:formProperty</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">extensionElements</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">userTask</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow7&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;reviewProfitability&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;enoughInformationCheck&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">exclusiveGateway</span> <span class="attr">id</span>=<span class="string">&quot;enoughInformationCheck&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Enough information?&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow8&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;enoughInformationCheck&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;notEnoughInformationEnd&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">conditionExpression</span>&gt;</span>$&#123;notEnoughInformation == &#x27;true&#x27;&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">sequenceFlow</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow9&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;enoughInformationCheck&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;subProcessEnd2&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">conditionExpression</span>&gt;</span>$&#123;notEnoughInformation == &#x27;false&#x27;&#125;<span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">sequenceFlow</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;subProcessEnd2&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;notEnoughInformationEnd&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">errorEventDefinition</span> <span class="attr">errorRef</span>=<span class="string">&quot;notEnoughInfoError&quot;</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">endEvent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">subProcess</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow10&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;reviewSalesLeadSubProcess&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;storeLeadInCrmSystem&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">boundaryEvent</span> <span class="attr">attachedToRef</span>=<span class="string">&quot;reviewSalesLeadSubProcess&quot;</span> <span class="attr">cancelActivity</span>=<span class="string">&quot;true&quot;</span> <span class="attr">id</span>=<span class="string">&quot;catchNotEnoughInformationError&quot;</span> &gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">errorEventDefinition</span> <span class="attr">errorRef</span>=<span class="string">&quot;notEnoughInfoError&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">boundaryEvent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow11&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;catchNotEnoughInformationError&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;provideAdditionalDetails&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;provideAdditionalDetails&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Provide additional details&quot;</span> <span class="attr">activiti:assignee</span>=<span class="string">&quot;$&#123;initiator&#125;&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">documentation</span>&gt;</span>Provide additional details for $&#123;customerName&#125;.<span class="tag">&lt;/<span class="name">documentation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">extensionElements</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">activiti:formProperty</span> <span class="attr">id</span>=<span class="string">&quot;details&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Additional details&quot;</span> <span class="attr">type</span>=<span class="string">&quot;string&quot;</span> <span class="attr">required</span>=<span class="string">&quot;true&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">extensionElements</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">userTask</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow12&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;provideAdditionalDetails&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;reviewSalesLeadSubProcess&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">task</span> <span class="attr">id</span>=<span class="string">&quot;storeLeadInCrmSystem&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Store lead in CRM system&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow13&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;storeLeadInCrmSystem&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;processEnd&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">endEvent</span> <span class="attr">id</span>=<span class="string">&quot;processEnd&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">process</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="测试代码-1"><a href="#测试代码-1" class="headerlink" title="测试代码"></a>测试代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BoundaryErrorEventTest</span> <span class="keyword">extends</span> <span class="title">PluggableActivitiTestCase</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Rule</span></span><br><span class="line">    <span class="keyword">public</span> ActivitiRule activitiRule = <span class="keyword">new</span> ActivitiRule();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.setUp();</span><br><span class="line">        <span class="comment">// 设置当前用户</span></span><br><span class="line">        Authentication.setAuthenticatedUserId(<span class="string">&quot;destiny&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">tearDown</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Authentication.setAuthenticatedUserId(<span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">super</span>.tearDown();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Deployment(resources = &#123;&quot;org/destiny/activiti/reviewSalesLead.bpmn20.xml&quot;&#125;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testReviewSalesLeadProcess</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Map&lt;String, Object&gt; variables = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        variables.put(<span class="string">&quot;details&quot;</span>, <span class="string">&quot;interesting&quot;</span>);</span><br><span class="line">        variables.put(<span class="string">&quot;customerName&quot;</span>, <span class="string">&quot;Camery&quot;</span>);</span><br><span class="line"></span><br><span class="line">        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(<span class="string">&quot;reviewSaledLead&quot;</span>, variables);</span><br><span class="line">        log.info(<span class="string">&quot;processInstance: &#123;&#125;&quot;</span>, ToStringBuilder.reflectionToString(processInstance, ToStringStyle.JSON_STYLE));</span><br><span class="line"></span><br><span class="line">        Task task = taskService.createTaskQuery()</span><br><span class="line">                .taskAssignee(<span class="string">&quot;destiny&quot;</span>)</span><br><span class="line">                .singleResult();</span><br><span class="line"></span><br><span class="line">        log.info(<span class="string">&quot;task: &#123;&#125;&quot;</span>, ToStringBuilder.reflectionToString(task, ToStringStyle.JSON_STYLE));</span><br><span class="line">        <span class="comment">// 使用断言确认</span></span><br><span class="line">        assertEquals(task.getName(), <span class="string">&quot;Provide new sales lead&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 提交节点</span></span><br><span class="line">        taskService.complete(task.getId());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 进入并行网关, 会同时生成两个 task</span></span><br><span class="line">        Task ratingTask = taskService.createTaskQuery().taskCandidateGroup(<span class="string">&quot;accountancy&quot;</span>).singleResult();</span><br><span class="line">        log.info(<span class="string">&quot;ratingTask: &#123;&#125;&quot;</span>, ToStringBuilder.reflectionToString(ratingTask, ToStringStyle.JSON_STYLE));</span><br><span class="line">        assertEquals(ratingTask.getName(), <span class="string">&quot;Review customer rating&quot;</span>);</span><br><span class="line"></span><br><span class="line">        Task profitabilityTask = taskService.createTaskQuery().taskCandidateGroup(<span class="string">&quot;management&quot;</span>).singleResult();</span><br><span class="line">        log.info(<span class="string">&quot;profitabilityTask: &#123;&#125;&quot;</span>, ToStringBuilder.reflectionToString(profitabilityTask, ToStringStyle.JSON_STYLE));</span><br><span class="line">        assertEquals(profitabilityTask.getName(), <span class="string">&quot;Review profitability&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Review profitability 提交后就会触发 errorEvent</span></span><br><span class="line">        variables = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        variables.put(<span class="string">&quot;notEnoughInformation&quot;</span>, <span class="keyword">true</span>);</span><br><span class="line">        taskService.complete(profitabilityTask.getId(), variables);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 查找流程发起者 destiny 对应的 task</span></span><br><span class="line">        <span class="comment">// 此时 errorEvent 会被边界条件捕获, 流转到 Review profitability</span></span><br><span class="line">        Task provideDetailsTask = taskService.createTaskQuery().taskAssignee(<span class="string">&quot;destiny&quot;</span>).singleResult();</span><br><span class="line">        log.info(<span class="string">&quot;provideDetailsTask: &#123;&#125;&quot;</span>, ToStringBuilder.reflectionToString(provideDetailsTask, ToStringStyle.JSON_STYLE));</span><br><span class="line">        assertEquals(provideDetailsTask.getName(), <span class="string">&quot;Provide additional details&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 完成 Review profitability 节点后, 会重新进入子流程</span></span><br><span class="line">        taskService.complete(provideDetailsTask.getId());</span><br><span class="line">        List&lt;Task&gt; reviewTasks = taskService.createTaskQuery().orderByTaskName().asc().list();</span><br><span class="line">        <span class="keyword">for</span> (Task reviewTask : reviewTasks) &#123;</span><br><span class="line">            log.info(<span class="string">&quot;reviewTask: &#123;&#125;&quot;</span>, ToStringBuilder.reflectionToString(reviewTask, ToStringStyle.JSON_STYLE));</span><br><span class="line">        &#125;</span><br><span class="line">        assertEquals(reviewTasks.get(<span class="number">0</span>).getName(), <span class="string">&quot;Review customer rating&quot;</span>);</span><br><span class="line">        assertEquals(reviewTasks.get(<span class="number">1</span>).getName(), <span class="string">&quot;Review profitability&quot;</span>);</span><br><span class="line"></span><br><span class="line">        taskService.complete(reviewTasks.get(<span class="number">0</span>).getId());</span><br><span class="line">        variables.put(<span class="string">&quot;notEnoughInformation&quot;</span>, <span class="keyword">false</span>);</span><br><span class="line">        taskService.complete(reviewTasks.get(<span class="number">1</span>).getId(), variables);</span><br><span class="line">        assertProcessEnded(processInstance.getId());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="日志输出-1"><a href="#日志输出-1" class="headerlink" title="日志输出"></a>日志输出</h4><blockquote>
+<p>分析日志可以看到, 没有错误所有的断言全部通过, 证明整个流程无误(日志量比较大, 为了能够清晰描述流程特地将日志格式调整)</p>
+</blockquote>
+<pre><code>03:53:20,823 [main] INFO  org.activiti.engine.ProcessEngines  - initialised process engine default
+03:53:23,006 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,008 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : theStart (StartEvent, parent id 5 (active)
+
+03:53:23,009 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,009 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : theStart (StartEvent, parent id 5 (active)
+
+03:53:23,010 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,010 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : theStart -&gt; provideNewSalesLead, parent id 5 (active)
+
+03:53:23,010 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,011 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : provideNewSalesLead (UserTask, parent id 5 (active)
+
+03:53:23,053 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - processInstance: &#123;&quot;currentFlowElement&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;processInstance&quot;:&quot;ProcessInstance[5]&quot;,&quot;parent&quot;:null,&quot;executions&quot;:[Execution[ id &#39;10&#39; ] - activity &#39;provideNewSalesLead - parent &#39;5&#39;],&quot;superExecution&quot;:null,&quot;subProcessInstance&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;name&quot;:null,&quot;description&quot;:null,&quot;localizedName&quot;:null,&quot;localizedDescription&quot;:null,&quot;lockTime&quot;:null,&quot;isActive&quot;:true,&quot;isScope&quot;:true,&quot;isConcurrent&quot;:false,&quot;isEnded&quot;:false,&quot;isEventScope&quot;:false,&quot;isMultiInstanceRoot&quot;:false,&quot;isCountEnabled&quot;:false,&quot;eventName&quot;:null,&quot;eventSubscriptions&quot;:[],&quot;jobs&quot;:[],&quot;timerJobs&quot;:[],&quot;tasks&quot;:[],&quot;identityLinks&quot;:[IdentityLinkEntity[id=7, type=starter, userId=destiny, processInstanceId=5]],&quot;deleteReason&quot;:null,&quot;suspensionState&quot;:1,&quot;startUserId&quot;:&quot;destiny&quot;,&quot;startTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;eventSubscriptionCount&quot;:0,&quot;taskCount&quot;:0,&quot;jobCount&quot;:0,&quot;timerJobCount&quot;:0,&quot;suspendedJobCount&quot;:0,&quot;deadLetterJobCount&quot;:0,&quot;variableCount&quot;:0,&quot;identityLinkCount&quot;:0,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;processDefinitionKey&quot;:&quot;reviewSaledLead&quot;,&quot;processDefinitionName&quot;:&quot;Review sales lead&quot;,&quot;processDefinitionVersion&quot;:1,&quot;deploymentId&quot;:null,&quot;activityId&quot;:null,&quot;activityName&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;businessKey&quot;:null,&quot;parentId&quot;:null,&quot;superExecutionId&quot;:null,&quot;rootProcessInstanceId&quot;:&quot;5&quot;,&quot;rootProcessInstance&quot;:null,&quot;forcedUpdate&quot;:false,&quot;queryVariables&quot;:null,&quot;isDeleted&quot;:false,&quot;variableInstances&quot;:&#123;details=VariableInstanceEntity[id=8, name=details, type=string, textValue=interesting], customerName=VariableInstanceEntity[id=9, name=customerName, type=string, textValue=Camery], initiator=VariableInstanceEntity[id=6, name=initiator, type=string, textValue=destiny]&#125;,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;5&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:true,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,075 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - task: &#123;&quot;owner&quot;:null,&quot;assigneeUpdatedCount&quot;:1,&quot;originalAssignee&quot;:null,&quot;assignee&quot;:&quot;destiny&quot;,&quot;delegationState&quot;:null,&quot;parentTaskId&quot;:null,&quot;name&quot;:&quot;Provide new sales lead&quot;,&quot;localizedName&quot;:null,&quot;description&quot;:null,&quot;localizedDescription&quot;:null,&quot;priority&quot;:50,&quot;createTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;dueDate&quot;:null,&quot;suspensionState&quot;:1,&quot;category&quot;:null,&quot;isIdentityLinksInitialized&quot;:false,&quot;taskIdentityLinkEntities&quot;:[],&quot;executionId&quot;:&quot;10&quot;,&quot;execution&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;processInstance&quot;:null,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;taskDefinitionKey&quot;:&quot;provideNewSalesLead&quot;,&quot;formKey&quot;:null,&quot;isDeleted&quot;:false,&quot;isCanceled&quot;:false,&quot;eventName&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;queryVariables&quot;:null,&quot;forcedUpdate&quot;:false,&quot;claimTime&quot;:null,&quot;variableInstances&quot;:null,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;13&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:false,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,081 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+03:53:23,082 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : provideNewSalesLead (UserTask, parent id 5 (active)
+
+03:53:23,083 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,083 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : provideNewSalesLead (UserTask, parent id 5 (active)
+
+03:53:23,084 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,084 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : provideNewSalesLead -&gt; reviewSalesLeadSubProcess, parent id 5 (active)
+
+03:53:23,084 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,084 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active)
+
+03:53:23,086 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,087 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    └── 17 : subProcessStart (StartEvent, parent id 14 (active)
+
+03:53:23,087 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,087 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    └── 17 : subProcessStart (StartEvent, parent id 14 (active)
+
+03:53:23,087 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,088 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    └── 17 : subProcessStart -&gt; fork, parent id 14 (active)
+
+03:53:23,088 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,088 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    └── 17 : fork (ParallelGateway, parent id 14 (active)
+
+03:53:23,088 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,089 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    └── 17 : fork (ParallelGateway, parent id 14 (not active)
+
+03:53:23,089 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,089 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : fork -&gt; reviewProfitability, parent id 14 (active)
+    └── 20 : fork -&gt; reviewCustomerRating, parent id 14 (active)
+
+03:53:23,089 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,090 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : reviewProfitability (UserTask, parent id 14 (active)
+    └── 20 : fork -&gt; reviewCustomerRating, parent id 14 (active)
+
+03:53:23,090 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,090 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : reviewProfitability (UserTask, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,092 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,092 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 10 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : reviewProfitability (UserTask, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,114 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - ratingTask: &#123;&quot;owner&quot;:null,&quot;assigneeUpdatedCount&quot;:0,&quot;originalAssignee&quot;:null,&quot;assignee&quot;:null,&quot;delegationState&quot;:null,&quot;parentTaskId&quot;:null,&quot;name&quot;:&quot;Review customer rating&quot;,&quot;localizedName&quot;:null,&quot;description&quot;:null,&quot;localizedDescription&quot;:null,&quot;priority&quot;:50,&quot;createTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;dueDate&quot;:null,&quot;suspensionState&quot;:1,&quot;category&quot;:null,&quot;isIdentityLinksInitialized&quot;:false,&quot;taskIdentityLinkEntities&quot;:[],&quot;executionId&quot;:&quot;20&quot;,&quot;execution&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;processInstance&quot;:null,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;taskDefinitionKey&quot;:&quot;reviewCustomerRating&quot;,&quot;formKey&quot;:null,&quot;isDeleted&quot;:false,&quot;isCanceled&quot;:false,&quot;eventName&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;queryVariables&quot;:null,&quot;forcedUpdate&quot;:false,&quot;claimTime&quot;:null,&quot;variableInstances&quot;:null,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;25&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:false,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,116 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - profitabilityTask: &#123;&quot;owner&quot;:null,&quot;assigneeUpdatedCount&quot;:0,&quot;originalAssignee&quot;:null,&quot;assignee&quot;:null,&quot;delegationState&quot;:null,&quot;parentTaskId&quot;:null,&quot;name&quot;:&quot;Review profitability&quot;,&quot;localizedName&quot;:null,&quot;description&quot;:&quot;destiny has published a new sales lead: Camery. Details: interesting&quot;,&quot;localizedDescription&quot;:null,&quot;priority&quot;:50,&quot;createTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;dueDate&quot;:null,&quot;suspensionState&quot;:1,&quot;category&quot;:null,&quot;isIdentityLinksInitialized&quot;:false,&quot;taskIdentityLinkEntities&quot;:[],&quot;executionId&quot;:&quot;17&quot;,&quot;execution&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;processInstance&quot;:null,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;taskDefinitionKey&quot;:&quot;reviewProfitability&quot;,&quot;formKey&quot;:null,&quot;isDeleted&quot;:false,&quot;isCanceled&quot;:false,&quot;eventName&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;queryVariables&quot;:null,&quot;forcedUpdate&quot;:false,&quot;claimTime&quot;:null,&quot;variableInstances&quot;:null,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;22&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:false,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,122 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+03:53:23,125 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : reviewProfitability (UserTask, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,126 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,126 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : reviewProfitability (UserTask, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,126 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,127 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : reviewProfitability -&gt; enoughInformationCheck, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,127 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,127 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : enoughInformationCheck (ExclusiveGateway, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,131 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,131 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : enoughInformationCheck -&gt; notEnoughInformationEnd, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,132 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,132 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : enoughInformationCheck -&gt; notEnoughInformationEnd, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,132 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,132 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : notEnoughInformationEnd (EndEvent, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,133 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+03:53:23,134 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 14 (active)
+    ├── 17 : notEnoughInformationEnd (EndEvent, parent id 14 (active)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (active)
+
+03:53:23,139 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,139 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 17 : notEnoughInformationEnd (EndEvent, parent id 14 (not active) (ended)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (not active) (ended)
+└── 16 : catchNotEnoughInformationError (BoundaryEvent, parent id 5 (active)
+
+03:53:23,139 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,139 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 17 : notEnoughInformationEnd (EndEvent, parent id 14 (not active) (ended)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (not active) (ended)
+└── 16 : catchNotEnoughInformationError -&gt; provideAdditionalDetails, parent id 5 (active)
+
+03:53:23,139 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,140 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 14 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 17 : notEnoughInformationEnd (EndEvent, parent id 14 (not active) (ended)
+    └── 20 : reviewCustomerRating (UserTask, parent id 14 (not active) (ended)
+└── 16 : provideAdditionalDetails (UserTask, parent id 5 (active)
+
+03:53:23,150 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - provideDetailsTask: &#123;&quot;owner&quot;:null,&quot;assigneeUpdatedCount&quot;:1,&quot;originalAssignee&quot;:null,&quot;assignee&quot;:&quot;destiny&quot;,&quot;delegationState&quot;:null,&quot;parentTaskId&quot;:null,&quot;name&quot;:&quot;Provide additional details&quot;,&quot;localizedName&quot;:null,&quot;description&quot;:&quot;Provide additional details for Camery.&quot;,&quot;localizedDescription&quot;:null,&quot;priority&quot;:50,&quot;createTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;dueDate&quot;:null,&quot;suspensionState&quot;:1,&quot;category&quot;:null,&quot;isIdentityLinksInitialized&quot;:false,&quot;taskIdentityLinkEntities&quot;:[],&quot;executionId&quot;:&quot;16&quot;,&quot;execution&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;processInstance&quot;:null,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;taskDefinitionKey&quot;:&quot;provideAdditionalDetails&quot;,&quot;formKey&quot;:null,&quot;isDeleted&quot;:false,&quot;isCanceled&quot;:false,&quot;eventName&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;queryVariables&quot;:null,&quot;forcedUpdate&quot;:false,&quot;claimTime&quot;:null,&quot;variableInstances&quot;:null,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;32&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:false,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,152 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+03:53:23,153 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : provideAdditionalDetails (UserTask, parent id 5 (active)
+
+03:53:23,154 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,154 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : provideAdditionalDetails (UserTask, parent id 5 (active)
+
+03:53:23,155 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,155 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : provideAdditionalDetails -&gt; reviewSalesLeadSubProcess, parent id 5 (active)
+
+03:53:23,155 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,155 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active)
+
+03:53:23,156 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,157 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : subProcessStart (StartEvent, parent id 33 (active)
+
+03:53:23,157 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,157 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : subProcessStart (StartEvent, parent id 33 (active)
+
+03:53:23,157 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,158 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : subProcessStart -&gt; fork, parent id 33 (active)
+
+03:53:23,158 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,158 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : fork (ParallelGateway, parent id 33 (active)
+
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : fork (ParallelGateway, parent id 33 (not active)
+
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    ├── 36 : fork -&gt; reviewProfitability, parent id 33 (active)
+    └── 39 : fork -&gt; reviewCustomerRating, parent id 33 (active)
+
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    ├── 36 : reviewProfitability (UserTask, parent id 33 (active)
+    └── 39 : fork -&gt; reviewCustomerRating, parent id 33 (active)
+
+03:53:23,159 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,160 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    ├── 36 : reviewProfitability (UserTask, parent id 33 (active)
+    └── 39 : reviewCustomerRating (UserTask, parent id 33 (active)
+
+03:53:23,161 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,162 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 16 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (ended)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    ├── 36 : reviewProfitability (UserTask, parent id 33 (active)
+    └── 39 : reviewCustomerRating (UserTask, parent id 33 (active)
+
+03:53:23,180 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - reviewTask: &#123;&quot;owner&quot;:null,&quot;assigneeUpdatedCount&quot;:0,&quot;originalAssignee&quot;:null,&quot;assignee&quot;:null,&quot;delegationState&quot;:null,&quot;parentTaskId&quot;:null,&quot;name&quot;:&quot;Review customer rating&quot;,&quot;localizedName&quot;:null,&quot;description&quot;:null,&quot;localizedDescription&quot;:null,&quot;priority&quot;:50,&quot;createTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;dueDate&quot;:null,&quot;suspensionState&quot;:1,&quot;category&quot;:null,&quot;isIdentityLinksInitialized&quot;:false,&quot;taskIdentityLinkEntities&quot;:[],&quot;executionId&quot;:&quot;39&quot;,&quot;execution&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;processInstance&quot;:null,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;taskDefinitionKey&quot;:&quot;reviewCustomerRating&quot;,&quot;formKey&quot;:null,&quot;isDeleted&quot;:false,&quot;isCanceled&quot;:false,&quot;eventName&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;queryVariables&quot;:null,&quot;forcedUpdate&quot;:false,&quot;claimTime&quot;:null,&quot;variableInstances&quot;:null,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;44&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:false,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,180 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - reviewTask: &#123;&quot;owner&quot;:null,&quot;assigneeUpdatedCount&quot;:0,&quot;originalAssignee&quot;:null,&quot;assignee&quot;:null,&quot;delegationState&quot;:null,&quot;parentTaskId&quot;:null,&quot;name&quot;:&quot;Review profitability&quot;,&quot;localizedName&quot;:null,&quot;description&quot;:&quot;destiny has published a new sales lead: Camery. Details: interesting&quot;,&quot;localizedDescription&quot;:null,&quot;priority&quot;:50,&quot;createTime&quot;:&quot;Sat Dec 08 15:53:23 CST 2018&quot;,&quot;dueDate&quot;:null,&quot;suspensionState&quot;:1,&quot;category&quot;:null,&quot;isIdentityLinksInitialized&quot;:false,&quot;taskIdentityLinkEntities&quot;:[],&quot;executionId&quot;:&quot;36&quot;,&quot;execution&quot;:null,&quot;processInstanceId&quot;:&quot;5&quot;,&quot;processInstance&quot;:null,&quot;processDefinitionId&quot;:&quot;reviewSaledLead:1:4&quot;,&quot;taskDefinitionKey&quot;:&quot;reviewProfitability&quot;,&quot;formKey&quot;:null,&quot;isDeleted&quot;:false,&quot;isCanceled&quot;:false,&quot;eventName&quot;:null,&quot;currentActivitiListener&quot;:null,&quot;tenantId&quot;:&quot;&quot;,&quot;queryVariables&quot;:null,&quot;forcedUpdate&quot;:false,&quot;claimTime&quot;:null,&quot;variableInstances&quot;:null,&quot;usedVariablesCache&quot;:&#123;&#125;,&quot;transientVariabes&quot;:null,&quot;cachedElContext&quot;:null,&quot;id&quot;:&quot;41&quot;,&quot;revision&quot;:1,&quot;isInserted&quot;:false,&quot;isUpdated&quot;:false,&quot;isDeleted&quot;:false&#125;
+03:53:23,183 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+03:53:23,190 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 39 : reviewCustomerRating (UserTask, parent id 33 (active)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,190 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,190 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 39 : reviewCustomerRating (UserTask, parent id 33 (active)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,191 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,191 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 39 : reviewCustomerRating -&gt; subProcessEnd1, parent id 33 (active)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,191 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,191 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 39 : subProcessEnd1 (EndEvent, parent id 33 (active)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,191 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,192 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 39 : subProcessEnd1 (EndEvent, parent id 33 (active)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,192 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.EndExecutionOperation :
+03:53:23,193 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 39 : subProcessEnd1 (EndEvent, parent id 33 (active)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,203 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+03:53:23,204 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,205 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,205 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability (UserTask, parent id 33 (active)
+
+03:53:23,206 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,206 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : reviewProfitability -&gt; enoughInformationCheck, parent id 33 (active)
+
+03:53:23,206 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,206 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : enoughInformationCheck (ExclusiveGateway, parent id 33 (active)
+
+03:53:23,206 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,206 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : enoughInformationCheck -&gt; subProcessEnd2, parent id 33 (active)
+
+03:53:23,207 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,207 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : enoughInformationCheck -&gt; subProcessEnd2, parent id 33 (active)
+
+03:53:23,207 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,207 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (active)
+
+03:53:23,207 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,207 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (active)
+
+03:53:23,208 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.EndExecutionOperation :
+03:53:23,208 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active) (scope)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (active)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (active)
+
+03:53:23,211 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,211 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (active)
+
+03:53:23,211 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,211 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : reviewSalesLeadSubProcess -&gt; storeLeadInCrmSystem, parent id 5 (active)
+
+03:53:23,211 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : storeLeadInCrmSystem (ManualTask, parent id 5 (active)
+
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : storeLeadInCrmSystem (ManualTask, parent id 5 (active)
+
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : storeLeadInCrmSystem -&gt; processEnd, parent id 5 (active)
+
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.ContinueProcessOperation :
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : processEnd (EndEvent, parent id 5 (active)
+
+03:53:23,212 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TakeOutgoingSequenceFlowsOperation :
+03:53:23,213 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : processEnd (EndEvent, parent id 5 (active)
+
+03:53:23,213 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.EndExecutionOperation :
+03:53:23,213 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - 
+5 (process instance)
+└── 33 : reviewSalesLeadSubProcess (SubProcess, parent id 5 (not active) (scope) (ended)
+    ├── 35 : catchNotEnoughInformationError (BoundaryEvent, parent id 33 (not active) (ended)
+    └── 36 : subProcessEnd2 (EndEvent, parent id 33 (not active) (ended)
+└── 49 : processEnd (EndEvent, parent id 5 (active)
+
+03:53:23,281 [main] INFO  org.activiti.engine.impl.test.AbstractTestCase  - database was clean
+</code></pre>
+<h3 id="1-1-3-信号事件"><a href="#1-1-3-信号事件" class="headerlink" title="1.1.3. 信号事件"></a>1.1.3. 信号事件</h3><h4 id="1-1-3-1-信号开始事件"><a href="#1-1-3-1-信号开始事件" class="headerlink" title="1.1.3.1. 信号开始事件"></a>1.1.3.1. 信号开始事件</h4><blockquote>
+<p>信号开始事件的启动方式与普通开始事件启动方式很接近, 需要发出对应的信号去启动它</p>
+</blockquote>
+<p><img src="https://user-images.githubusercontent.com/17758731/49683712-2bea0c80-fb04-11e8-9a9d-f580144f604d.png" alt="image"></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">signal</span> <span class="attr">id</span>=<span class="string">&quot;theSignal&quot;</span> <span class="attr">name</span>=<span class="string">&quot;The signal&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;processWithSignalStart1&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;theStart&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">signalEventDefinition</span> <span class="attr">id</span>=<span class="string">&quot;theSignalEventDefinition&quot;</span> <span class="attr">signalRef</span>=<span class="string">&quot;theSignal&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">startEvent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">process</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-3-2-信号中间事件"><a href="#1-1-3-2-信号中间事件" class="headerlink" title="1.1.3.2 信号中间事件"></a>1.1.3.2 信号中间事件</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">signal</span> <span class="attr">id</span>=<span class="string">&quot;alterSignal&quot;</span> <span class="attr">name</span>=<span class="string">&quot;alter&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;catchSignal&quot;</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 信号抛出事件 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">intermediateThrowEvent</span> <span class="attr">id</span>=<span class="string">&quot;throwSignalEvent&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Alter&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">signalEventDefinition</span> <span class="attr">signalRef</span>=<span class="string">&quot;alterSignal&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">intermediateThrowEvent</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!-- 信号捕获事件 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">intermediateCatchEvent</span> <span class="attr">id</span>=<span class="string">&quot;throwSignalEvent&quot;</span> <span class="attr">name</span>=<span class="string">&quot;On Alter&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">signalEventDefinition</span> <span class="attr">signalRef</span>=<span class="string">&quot;alterSignal&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">intermediateCatchEvent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">process</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-1-4-消息事件"><a href="#1-1-4-消息事件" class="headerlink" title="1.1.4 消息事件"></a>1.1.4 消息事件</h3><blockquote>
+<p>消息事件的定义和信号事件的定义非常相近</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">message</span> <span class="attr">id</span>=<span class="string">&quot;newInvoice&quot;</span> <span class="attr">name</span>=<span class="string">&quot;newInvoiceMessage&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">message</span> <span class="attr">id</span>=<span class="string">&quot;payment&quot;</span> <span class="attr">name</span>=<span class="string">&quot;paymentMessage&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">process</span> <span class="attr">id</span>=<span class="string">&quot;catchSignal&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">startEvent</span> <span class="attr">id</span>=<span class="string">&quot;messageStart&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">messsageEventDefinition</span> <span class="attr">messageRef</span>=<span class="string">&quot;newInvoice&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">startEvent</span>&gt;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">&lt;!-- 信号捕获事件 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">intermediateCatchEvent</span> <span class="attr">id</span>=<span class="string">&quot;paymentEvt&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">messageEventDefinition</span> <span class="attr">messageRef</span>=<span class="string">&quot;payment&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">intermediateCatchEvent</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">process</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="3-顺序流和和网关"><a href="#3-顺序流和和网关" class="headerlink" title="3. 顺序流和和网关"></a>3. 顺序流和和网关</h1><p>顺序流的分类: </p>
+<ul>
+<li>顺序流</li>
+<li>条件顺序流</li>
+<li>默认顺序流</li>
+</ul>
+<h2 id="3-1-网关"><a href="#3-1-网关" class="headerlink" title="3.1. 网关"></a>3.1. 网关</h2><p>网关的分类:</p>
+<ul>
+<li>排他网关(Exclusive Gateway)</li>
+<li>并行网关(Parallel Gateway)</li>
+<li>包容网关(Inclusive Gateway), 类似排他网关和并行网关的组合体, 即支持多条路, 有支持表达式</li>
+<li>事件网关(Event-based Gateway), 每个分支都有一个捕获事件等待被触发, 一个触发后, 其他都会失效</li>
+</ul>
+<h3 id="3-1-1-排他网关"><a href="#3-1-1-排他网关" class="headerlink" title="3.1.1. 排他网关"></a>3.1.1. 排他网关</h3><blockquote>
+<p>分支判断<br>只能选一<br>支持默认</p>
+</blockquote>
+<p><img src="https://user-images.githubusercontent.com/17758731/49684049-f562c080-fb08-11e8-9c3f-ef357ceb32b7.png" alt="image"></p>
+<h4 id="流程定义-2"><a href="#流程定义-2" class="headerlink" title="流程定义"></a>流程定义</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">exclusiveGateway</span> <span class="attr">id</span>=<span class="string">&quot;exclusiveGateway1&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Exclusive Gateway&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">name</span>=<span class="string">&quot;精英&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">name</span>=<span class="string">&quot;优秀&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask3&quot;</span> <span class="attr">name</span>=<span class="string">&quot;普通&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow2&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;exclusiveGateway1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask1&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">conditionExpression</span> <span class="attr">xsi:type</span>=<span class="string">&quot;tFormalExpression&quot;</span>&gt;</span></span><br><span class="line">        &lt;![CDATA[score &gt;= 90]]&gt;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sequenceFlow</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow3&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;exclusiveGateway1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask2&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">conditionExpression</span> <span class="attr">xsi:type</span>=<span class="string">&quot;tFormalExpression&quot;</span>&gt;</span></span><br><span class="line">        &lt;![CDATA[score &gt;= 75 &amp;&amp; score &lt; 90]]&gt;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">conditionExpression</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sequenceFlow</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 默认数据流 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow4&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;exclusiveGateway1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask1&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="测试代码-2"><a href="#测试代码-2" class="headerlink" title="测试代码"></a>测试代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="meta">@Deployment(resources = &#123;&quot;org/destiny/activiti/my-process-exclusive.bpmn20.xml&quot;&#125;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testExclusiveGateway</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Map&lt;String, Object&gt; variables = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    variables.put(<span class="string">&quot;key1&quot;</span>, <span class="number">3</span>);</span><br><span class="line">    variables.put(<span class="string">&quot;score&quot;</span>, <span class="number">91</span>);</span><br><span class="line">    ProcessInstance processInstance = activitiRule.getRuntimeService().startProcessInstanceByKey(<span class="string">&quot;my-process&quot;</span>, variables);</span><br><span class="line">    Task task = activitiRule.getTaskService().createTaskQuery().singleResult();</span><br><span class="line">    <span class="comment">// org.destiny.activiti.bpmn20.GatewayTest  - task.name = 精英</span></span><br><span class="line">    log.info(<span class="string">&quot;task.name = &#123;&#125;&quot;</span>, task.getName());     </span><br><span class="line">    assertEquals(task.getName(), <span class="string">&quot;精英&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-2-并行网关"><a href="#3-1-2-并行网关" class="headerlink" title="3.1.2. 并行网关"></a>3.1.2. 并行网关</h3><blockquote>
+<p>让流程从单线程变为并发情况, 原有的一条流转数据变为两条, 可以同时进行确认支付和确认收货, 当这两个条件同时满足时, 继续进行后面的操作</p>
+</blockquote>
+<p><img src="https://user-images.githubusercontent.com/17758731/49684527-edf2e580-fb0f-11e8-9c43-d8e34140d663.png" alt="image"></p>
+<ul>
+<li>流程并发</li>
+<li>分支</li>
+<li>合并</li>
+<li>忽略条件(即使填了条件也不会生效)</li>
+<li>非对称(不要求所有的分支最终都合并在一起)</li>
+</ul>
+<h4 id="流程定义-3"><a href="#流程定义-3" class="headerlink" title="流程定义"></a>流程定义</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">parallelGateway</span> <span class="attr">id</span>=<span class="string">&quot;parallelGateway1&quot;</span> <span class="attr">name</span>=<span class="string">&quot;Parallel Gateway&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">name</span>=<span class="string">&quot;确认支付&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">name</span>=<span class="string">&quot;确认收货&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow3&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;parallelGateway1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask1&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow4&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;parallelGateway1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask2&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">parallelGateway</span> <span class="attr">id</span>=<span class="string">&quot;parallelGateway2&quot;</span> <span class="attr">name</span>=<span class="string">&quot;parallelGateway&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow8&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask1&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;parallelGateway2&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow9&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;userTask2&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;parallelGateway2&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">userTask</span> <span class="attr">id</span>=<span class="string">&quot;userTask3&quot;</span> <span class="attr">name</span>=<span class="string">&quot;订单完成&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">sequenceFlow</span> <span class="attr">id</span>=<span class="string">&quot;flow10&quot;</span> <span class="attr">sourceRef</span>=<span class="string">&quot;parallelGateway2&quot;</span> <span class="attr">targetRef</span>=<span class="string">&quot;userTask3&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="测试代码-3"><a href="#测试代码-3" class="headerlink" title="测试代码"></a>测试代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="meta">@Deployment(resources = &#123;&quot;org/destiny/activiti/my-process-parallel.bpmn20.xml&quot;&#125;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testParallelGateway</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    activitiRule.getRuntimeService().startProcessInstanceByKey(<span class="string">&quot;my-process&quot;</span>);</span><br><span class="line">    List&lt;Task&gt; taskList = activitiRule.getTaskService().createTaskQuery().list();</span><br><span class="line">    log.info(<span class="string">&quot;过并行网关时的 task 数量: &#123;&#125;&quot;</span>, taskList.size());</span><br><span class="line">    <span class="keyword">for</span> (Task task : taskList) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;task name: &#123;&#125;&quot;</span>, task.getName());</span><br><span class="line">    &#125;</span><br><span class="line">    assertEquals(<span class="number">2</span>, taskList.size());</span><br><span class="line">    activitiRule.getTaskService().complete(taskList.get(<span class="number">0</span>).getId());</span><br><span class="line">    List&lt;Task&gt; taskList1 = activitiRule.getTaskService().createTaskQuery().list();</span><br><span class="line">    log.info(<span class="string">&quot;提交第 1 个任务时的 task 数量: [&#123;&#125;]&quot;</span>, taskList1.size());</span><br><span class="line">    <span class="keyword">for</span> (Task task : taskList1) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;task name: &#123;&#125;&quot;</span>, task.getName());</span><br><span class="line">    &#125;</span><br><span class="line">    assertEquals(<span class="number">1</span>, taskList1.size());</span><br><span class="line">    activitiRule.getTaskService().complete(taskList.get(<span class="number">1</span>).getId());</span><br><span class="line">    List&lt;Task&gt; taskList2 = activitiRule.getTaskService().createTaskQuery().list();</span><br><span class="line">    log.info(<span class="string">&quot;提交第 2 个任务时的 task 数量: [&#123;&#125;]&quot;</span>, taskList2.size());</span><br><span class="line">    <span class="keyword">for</span> (Task task : taskList2) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;task name: &#123;&#125;&quot;</span>, task.getName());</span><br><span class="line">    &#125;</span><br><span class="line">    assertEquals(<span class="number">1</span>, taskList1.size());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="日志输出-2"><a href="#日志输出-2" class="headerlink" title="日志输出"></a>日志输出</h4><pre><code>06:17:51,705 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - 过并行网关时的 task 数量: 2
+06:17:51,705 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - task name: 确认支付
+06:17:51,706 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - task name: 确认收货
+06:17:51,710 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+
+06:17:51,721 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - 提交第 1 个任务时的 task 数量: [1]
+06:17:51,721 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - task name: 确认收货
+06:17:51,724 [main] INFO  org.activiti.engine.impl.interceptor.DebugCommandInvoker  - Execution tree while executing operation class org.activiti.engine.impl.agenda.TriggerExecutionOperation :
+
+06:17:51,738 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - 提交第 2 个任务时的 task 数量: [1]
+06:17:51,738 [main] INFO  org.destiny.activiti.bpmn20.GatewayTest  - task name: 订单完成
+</code></pre>
+<h3 id="3-1-3-包容性网关"><a href="#3-1-3-包容性网关" class="headerlink" title="3.1.3. 包容性网关"></a>3.1.3. 包容性网关</h3><blockquote>
+<p>可以理解为排他网关和并行网关的结合体</p>
+</blockquote>
+<ul>
+<li>排他网关有条件, 只能选择一条路径</li>
+<li>并行网关不带条件, 所有路径都会执行</li>
+<li>包容性网关有条件, 且支持并行运行</li>
+</ul>
+<ol>
+<li>并发</li>
+<li>分支</li>
+<li>合并</li>
+<li>条件</li>
+<li>非对称</li>
+</ol>
+<h4 id="事件网关"><a href="#事件网关" class="headerlink" title="事件网关"></a>事件网关</h4><blockquote>
+<p>会根据连接的捕获时间决定流程的走向, 只能走一条线路</p>
+</blockquote>
+<ol>
+<li>流程暂停</li>
+<li>事件订阅</li>
+<li>捕获事件</li>
+<li>单一执行</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/blog/tags/Activiti/" rel="tag"># Activiti</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/blog/2018/11/26/Activiti%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%BC%95%E6%93%8E/" rel="next" title="Activiti工作流引擎">
+                <i class="fa fa-chevron-left"></i> Activiti工作流引擎
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/12/11/Activiti-3-%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E8%AE%BE%E8%AE%A1/" rel="prev" title="Activiti(3)--数据模型设计">
+                Activiti(3)--数据模型设计 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/blog/archives">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-name">分类</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">标签</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/blog/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E4%BA%8B%E4%BB%B6"><span class="nav-text">1. 事件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-%E5%88%86%E7%B1%BB"><span class="nav-text">1.1 分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-1-%E5%AE%9A%E6%97%B6%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.1 定时事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-1-1-%E5%AE%9A%E6%97%B6%E5%BC%80%E5%A7%8B%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.1.1 定时开始事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-1-2-%E5%AE%9A%E6%97%B6%E8%BE%B9%E7%95%8C%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.1.2 定时边界事件</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89"><span class="nav-text">流程定义</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="nav-text">测试代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA"><span class="nav-text">日志输出</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-2-%E9%94%99%E8%AF%AF%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.2 错误事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE%E7%AE%80%E5%8D%95%E5%88%86%E6%9E%90"><span class="nav-text">流程图简单分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89-1"><span class="nav-text">流程定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81-1"><span class="nav-text">测试代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA-1"><span class="nav-text">日志输出</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-3-%E4%BF%A1%E5%8F%B7%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.3. 信号事件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-3-1-%E4%BF%A1%E5%8F%B7%E5%BC%80%E5%A7%8B%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.3.1. 信号开始事件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-3-2-%E4%BF%A1%E5%8F%B7%E4%B8%AD%E9%97%B4%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.3.2 信号中间事件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-4-%E6%B6%88%E6%81%AF%E4%BA%8B%E4%BB%B6"><span class="nav-text">1.1.4 消息事件</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E9%A1%BA%E5%BA%8F%E6%B5%81%E5%92%8C%E5%92%8C%E7%BD%91%E5%85%B3"><span class="nav-text">3. 顺序流和和网关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E7%BD%91%E5%85%B3"><span class="nav-text">3.1. 网关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-1-%E6%8E%92%E4%BB%96%E7%BD%91%E5%85%B3"><span class="nav-text">3.1.1. 排他网关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89-2"><span class="nav-text">流程定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81-2"><span class="nav-text">测试代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-2-%E5%B9%B6%E8%A1%8C%E7%BD%91%E5%85%B3"><span class="nav-text">3.1.2. 并行网关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%AE%9A%E4%B9%89-3"><span class="nav-text">流程定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81-3"><span class="nav-text">测试代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E8%BE%93%E5%87%BA-2"><span class="nav-text">日志输出</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-3-%E5%8C%85%E5%AE%B9%E6%80%A7%E7%BD%91%E5%85%B3"><span class="nav-text">3.1.3. 包容性网关</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E7%BD%91%E5%85%B3"><span class="nav-text">事件网关</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate"> 
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">destiny</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">
+  <i class="fa fa-user-md"></i>
+  <span id="busuanzi_container_site_uv">本站访客数:<span id="busuanzi_value_site_uv"></span></span>
+  
+  <!-- 由 <a class="theme-link" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 强力驱动 -->
+  </div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Code Alone </div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=6.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=6.1.0"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=6.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=6.1.0"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=6.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=6.1.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/blog/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/src/love.js"></script>>
